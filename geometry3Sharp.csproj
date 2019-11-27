@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,6 +7,9 @@
     <Copyright>Copyright © Ryan Schmidt/gradientspace  2016</Copyright>
     <Description>C# library for 3D geometric computation, mesh algorithms, etc.</Description>
     <Authors>Ryan Schmidt</Authors>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>geometry3SharpKey.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
 </Project>
