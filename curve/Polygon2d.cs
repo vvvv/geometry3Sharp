@@ -90,18 +90,18 @@ namespace g3
             get { return vertices.Count; }
         }
 
-        public void AppendVertex(Vector2d v)
+        public virtual void AppendVertex(Vector2d v)
         {
             vertices.Add(v);
 			Timestamp++; 
         }
-        public void AppendVertices(IEnumerable<Vector2d> v)
+        public virtual void AppendVertices(IEnumerable<Vector2d> v)
         {
             vertices.AddRange(v);
             Timestamp++;
         }
 
-        public void RemoveVertex(int idx)
+        public virtual void RemoveVertex(int idx)
         {
             vertices.RemoveAt(idx);
             Timestamp++;
@@ -121,7 +121,7 @@ namespace g3
         }
 
 
-        public void Reverse()
+        public virtual void Reverse()
 		{
 			vertices.Reverse();
 			Timestamp++;
@@ -405,8 +405,36 @@ namespace g3
 			return v;
 		}
 
+        public List<Vector2d> FindIntersections(Segment2d oseg)
+        {
+            List<Vector2d> v = new List<Vector2d>();
+            var osegBounds = new AxisAlignedBox2d();
+            osegBounds.Contain(oseg.P0);
+            osegBounds.Contain(oseg.P1);
+            if (!this.GetBounds().Intersects(osegBounds))
+                return v;
 
-		public Segment2d Segment(int iSegment)
+            foreach (Segment2d seg in SegmentItr())
+            {
+                // this computes test twice for intersections, but seg.intersects doesn't
+                // create any new objects so it should be much faster for majority of segments (should profile!)
+                if (seg.Intersects(oseg))
+                {
+                    IntrSegment2Segment2 intr = new IntrSegment2Segment2(seg, oseg);
+                    if (intr.Find())
+                    {
+                        v.Add(intr.Point0);
+                        if (intr.Quantity == 2)
+                            v.Add(intr.Point1);
+                    }
+                }
+            }
+            return v;
+        }
+
+
+
+        public Segment2d Segment(int iSegment)
 		{
 			return new Segment2d(vertices[iSegment], vertices[(iSegment + 1) % vertices.Count]);
 		}
@@ -609,7 +637,7 @@ namespace g3
 
 
 
-		public void Simplify( double clusterTol = 0.0001,
+		public virtual void Simplify( double clusterTol = 0.0001,
 		                      double lineDeviationTol = 0.01,
 							  bool bSimplifyStraightLines = true )
 		{
@@ -770,6 +798,15 @@ namespace g3
             return new Polygon2d(vertices);
         }
 
+        static public Polygon2d MakeRectangle(Vector2d xyMin, Vector2d xyMax)
+        {
+            VectorArray2d vertices = new VectorArray2d(4);
+            vertices.Set(0, xyMin.x, xyMin.y);
+            vertices.Set(1, xyMax.x, xyMin.y);
+            vertices.Set(2, xyMax.x, xyMax.y);
+            vertices.Set(3, xyMin.x, xyMax.y);
+            return new Polygon2d(vertices);
+        }
 
         static public Polygon2d MakeCircle(double fRadius, int nSteps, double angleShiftRad = 0)
         {

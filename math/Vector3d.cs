@@ -20,6 +20,9 @@ namespace g3
         public Vector3d(Vector3d copy) { x = copy.x; y = copy.y; z = copy.z; }
         public Vector3d(Vector3f copy) { x = copy.x; y = copy.y; z = copy.z; }
 
+        public Vector3d(Vector2d copy, double _z) { x = copy.x; y = copy.y; z = _z; }
+        public Vector3d(Vector2f copy, double _z) { x = copy.x; y = copy.y; z = _z; }
+
         static public readonly Vector3d Zero = new Vector3d(0.0f, 0.0f, 0.0f);
         static public readonly Vector3d One = new Vector3d(1.0f, 1.0f, 1.0f);
         static public readonly Vector3d AxisX = new Vector3d(1.0f, 0.0f, 0.0f);

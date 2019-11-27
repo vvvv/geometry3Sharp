@@ -5,7 +5,7 @@ using System.Text;
 
 namespace g3
 {
-	public struct Segment2d : IParametricCurve2d
+	public struct Segment2d : ICloneable, IParametricCurve2d
     {
         // Center-direction-extent representation.
         public Vector2d Center;
@@ -19,6 +19,15 @@ namespace g3
             Direction = p1 - p0;
             Extent = 0.5 * Direction.Normalize();
         }
+
+        public Segment2d(Segment2d other)
+        {
+            //update_from_endpoints(p0, p1);
+            Center = 0.5 * (other.P0 + other.P1);
+            Direction = other.P1 - other.P0;
+            Extent = 0.5 * Direction.Normalize();
+        }
+
         public Segment2d(Vector2d center, Vector2d direction, double extent)
         {
             Center = center; Direction = direction; Extent = extent;
@@ -248,7 +257,10 @@ namespace g3
             return Intersects(ref seg2, dotThresh, intervalThresh);
         }
 
-
+        object ICloneable.Clone()
+        {
+            return new Segment2d(this);
+        }
     }
 
 
