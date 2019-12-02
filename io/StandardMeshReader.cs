@@ -58,6 +58,8 @@ namespace g3
                 Readers.Add(new STLFormatReader());
                 Readers.Add(new OFFFormatReader());
                 Readers.Add(new BinaryG3FormatReader());
+                Readers.Add(new AMFFormatReader());
+                Readers.Add(new ThreeMFFormatReader());
             }
         }
 
@@ -403,7 +405,53 @@ namespace g3
 
     }
 
+    public class AMFFormatReader : MeshFormatReader {
+        public List<string> SupportedExtensions {
+            get {
+                return new List<string>() { "amf" };
+            }
+        }
 
+        public IOReadResult ReadFile(string sFilename, IMeshBuilder builder, ReadOptions options, ParsingMessagesHandler messages) {
+            try {
+                using (FileStream stream = File.Open(sFilename, FileMode.Open, FileAccess.Read)) {
+                    return ReadFile(stream, builder, options, messages);
+                }
+            } catch (Exception e) {
+                return new IOReadResult(IOCode.FileAccessError, "Could not open file " + sFilename + " for reading : " + e.Message);
+            }
+        }
 
+        public IOReadResult ReadFile(Stream stream, IMeshBuilder builder, ReadOptions options, ParsingMessagesHandler messages) {
+            AMFReader reader = new AMFReader();
+            //reader.warningEvent += messages;
+            IOReadResult result = reader.Read(new BinaryReader(stream), options, builder);
+            return result;
+        }
+    }
 
+    public class ThreeMFFormatReader : MeshFormatReader {
+        public List<string> SupportedExtensions {
+            get {
+                return new List<string>() { "3mf" };
+            }
+        }
+
+        public IOReadResult ReadFile(string sFilename, IMeshBuilder builder, ReadOptions options, ParsingMessagesHandler messages) {
+            try {
+                using (FileStream stream = File.Open(sFilename, FileMode.Open, FileAccess.Read)) {
+                    return ReadFile(stream, builder, options, messages);
+                }
+            } catch (Exception e) {
+                return new IOReadResult(IOCode.FileAccessError, "Could not open file " + sFilename + " for reading : " + e.Message);
+            }
+        }
+
+        public IOReadResult ReadFile(Stream stream, IMeshBuilder builder, ReadOptions options, ParsingMessagesHandler messages) {
+            ThreeMFReader reader = new ThreeMFReader();
+            //reader.warningEvent += messages;
+            IOReadResult result = reader.Read(new BinaryReader(stream), options, builder);
+            return result;
+        }
+    }
 }

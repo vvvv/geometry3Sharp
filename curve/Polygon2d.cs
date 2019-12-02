@@ -466,12 +466,15 @@ namespace g3
 				Segment2d seg = new Segment2d(vertices[vi], vertices[(vi + 1) % N]);
 				double t = (p - seg.Center).Dot(seg.Direction);
 				double d = double.MaxValue;
-				if (t >= seg.Extent)
-					d = seg.P1.DistanceSquared(p);
-				else if (t <= -seg.Extent)
-					d = seg.P0.DistanceSquared(p);
-				else
-					d = (seg.PointAt(t) - p).LengthSquared;	
+                if (t >= seg.Extent) {
+                    d = seg.P1.DistanceSquared(p);
+                    t = seg.Extent;
+                } else if (t <= -seg.Extent) {
+                    d = seg.P0.DistanceSquared(p);
+                    t = -seg.Extent;
+                } else {
+                    d = (seg.PointAt(t) - p).LengthSquared;
+                }
 				if ( d < dist ) {
 					dist = d;
 					iNearSeg = vi;
