@@ -3,7 +3,7 @@ name: Build & Test
 on:
   push:
     branch:
-        - '*'
+        - '**'
     tags-ignore:
         - v*
 
