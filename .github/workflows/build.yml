@@ -1,0 +1,16 @@
+name: Build & Test
+
+on:
+  push:
+    tags-ignore:
+        - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build project
+        run: dotnet build -c Release
+      - name: Test project
+        run: dotnet test -c Release
