@@ -165,8 +165,19 @@ namespace g3
                 h.Reverse();
         }
 
+        public void EnforceCounterClockwise()
+        {
+            bOuterIsCW = false;
 
-		public bool Contains(Vector2d vTest)
+            if (Outer.IsClockwise)
+                Outer.Reverse();
+
+            foreach (var h in Holes)
+                if (!h.IsClockwise)
+                    h.Reverse();
+        }
+
+        public bool Contains(Vector2d vTest)
 		{
 			if (outer.Contains(vTest) == false)
 				return false;
@@ -291,6 +302,47 @@ namespace g3
             Outer.Simplify(clusterTol, lineDeviationTol, bSimplifyStraightLines);
             foreach (var hole in holes)
                 hole.Simplify(clusterTol, lineDeviationTol, bSimplifyStraightLines);
+        }
+        
+        public List<Segment2d> TrimSegment2d(Segment2d seg)
+        {
+            // Find points where the outer boundary and holes intersect the segment.
+            var intersectionPoints = new List<Vector2d>();
+            intersectionPoints.AddRange(outer.FindIntersections(seg));
+            foreach (var hole in holes)
+                intersectionPoints.AddRange(hole.FindIntersections(seg));
+
+            // Handle the case where segment is fully contained
+            if (intersectionPoints.Count == 0)
+                if (Contains(seg))
+                    return new List<Segment2d>() { new Segment2d(seg) };
+
+            // Add segment start & end points in case they lay within the polygon
+            intersectionPoints.Add(seg.P0);
+            intersectionPoints.Add(seg.P1);
+
+            // Sort the points by their distance along the segment.
+            var intersections = new List<Tuple<double, Vector2d>>();
+            var line = new Line2d(seg.Center, seg.Direction);
+            foreach (var point in intersectionPoints)
+                intersections.Add(Tuple.Create(line.Project(point), point));           
+            intersections.Sort((a, b) => a.Item1.CompareTo(b.Item1));
+
+            // Add any segment with non-zero length that is contained in the polygon
+            var containedSegments = new List<Segment2d>();
+            for (int i = 1; i < intersections.Count; ++i)
+            {
+                var potentialSegment = new Segment2d(intersections[i - 1].Item2, intersections[i].Item2);
+
+                if (potentialSegment.Length <= MathUtil.Epsilon)
+                    continue;
+ 
+                if (Contains(potentialSegment.Center))
+                    containedSegments.Add(potentialSegment);
+            }
+            return containedSegments;
+
+
         }
 
 

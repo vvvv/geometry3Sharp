@@ -34,6 +34,7 @@ namespace g3
         /// </summary>
         public Func<Vector2d, bool> InsideTestF = null;
 
+        public Func<int, bool> HitFilterF = null;
 
         public GraphSplitter2d(DGraph2 graph)
         {
@@ -127,7 +128,11 @@ namespace g3
                         throw new Exception("GraphSplitter2d.Split: got parallel edge case!");
                     }
                 }
-                hits.Add(hit);
+
+                if (HitFilterF == null || HitFilterF(Graph.GetEdgeGroup(eid)))
+                {
+                    hits.Add(hit);
+                }
             }
 
             // sort by increasing ray-t

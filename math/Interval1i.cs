@@ -18,6 +18,15 @@ namespace g3
         public Interval1i(int x, int y) { this.a = x; this.b = y; }
         public Interval1i(int[] v2) { a = v2[0]; b = v2[1]; }
         public Interval1i(Interval1i copy) { a = copy.a; b = copy.b; }
+        
+        public Interval1i(IEnumerable<int> v2) {
+            
+            List<int> values = new List<int>(v2);
+            if (values.Count != 2)
+                throw new ArgumentException("Need exactly two values");
+            a = values[0];
+            b = values[1];
+        }
 
 
         static public readonly Interval1i Zero = new Interval1i(0, 0);

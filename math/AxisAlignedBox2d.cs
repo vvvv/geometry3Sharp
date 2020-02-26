@@ -299,7 +299,22 @@ namespace g3
             Min.Set(fNewX, fNewY);
         }
 
+        public bool Equals(AxisAlignedBox2d other, double tolerance = MathUtil.Epsilon)
+        {
+            if (!MathUtil.EpsilonEqual(Min.x, other.Min.x, tolerance))
+                return false;
 
+            if (!MathUtil.EpsilonEqual(Min.y, other.Min.y, tolerance))
+                return false;
+            
+            if (!MathUtil.EpsilonEqual(Max.x, other.Max.x, tolerance))
+                return false;
+            
+            if (!MathUtil.EpsilonEqual(Max.y, other.Max.y, tolerance))
+                return false;
+            
+            return true;
+        }
 
         public override string ToString() {
             return string.Format("[{0:F8},{1:F8}] [{2:F8},{3:F8}]", Min.x, Max.x, Min.y, Max.y);
