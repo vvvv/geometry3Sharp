@@ -257,7 +257,7 @@ namespace g3
                 DMesh3.PokeTriangleInfo pokeInfo;
                 MeshResult result = Target.PokeTriangle(tid, out pokeInfo);
                 if (result != MeshResult.Ok)
-                    throw new Exception("shit");
+                    throw new Exception("PokeTriangle result not Ok.");
                 int new_v = pokeInfo.new_vid;
 
                 Target.SetVertex(new_v, v.v);

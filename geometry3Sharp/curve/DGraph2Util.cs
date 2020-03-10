@@ -264,7 +264,7 @@ namespace g3
                 pNew = new PolyLine2d(p2);
                 pNew.AppendVertices(p1);
             } else
-                throw new Exception("shit");
+                throw new ArgumentException("Input polylines don't share an endpoint.");
             return pNew;
         }
 

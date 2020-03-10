@@ -672,7 +672,7 @@ skip_to_end:
             //    if (mesh.IsGroupBoundaryEdge(eid))
             //        if (constraints.GetEdgeConstraint(eid).CanFlip) {
             //            Util.gBreakToDebugger();
-            //            throw new Exception("fuck");
+            //            throw new Exception();
             //        }
             //}
             //foreach ( int vid in mesh.VertexIndices() ) {
