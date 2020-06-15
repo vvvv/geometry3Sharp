@@ -162,24 +162,52 @@ namespace g3
             return UnitCross(ref v2);
         }
 
-
-        public double AngleD(Vector3d v2)
+        /// <summary>
+        /// Finds the angle between this vector and another vector
+        /// </summary>
+        /// <param name="v2">The other vector</param>
+        /// <param name="normalized">Whether both vectors are already normalized; if this can be assumed, set this to true to avoid cost of normalization.</param>
+        /// <returns>Angle in degrees</returns>
+        public double AngleD(Vector3d v2, bool normalized = false)
         {
-            double fDot = MathUtil.Clamp(Dot(v2), -1, 1);
+            double fDot = MathUtil.Clamp(normalized ? Dot(v2) : Normalized.Dot(v2.Normalized), -1, 1);
             return Math.Acos(fDot) * MathUtil.Rad2Deg;
         }
-        public static double AngleD(Vector3d v1, Vector3d v2)
+
+        /// <summary>
+        /// Finds the angle between two vectors
+        /// </summary>
+        /// <param name="v1">The first vector</param>
+        /// <param name="v2">The second vector</param>
+        /// <param name="normalized">Whether both vectors are already normalized; if this can be assumed, set this to true to avoid cost of normalization.</param>
+        /// <returns>Angle in degrees</returns>
+        public static double AngleD(Vector3d v1, Vector3d v2, bool normalized = false)
         {
-            return v1.AngleD(v2);
+            return v1.AngleD(v2, normalized);
         }
-        public double AngleR(Vector3d v2)
+
+        /// <summary>
+        /// Finds the angle between this vector and another vector
+        /// </summary>
+        /// <param name="v2">The other vector</param>
+        /// <param name="normalized">Whether both vectors are already normalized; if this can be assumed, set this to true to avoid cost of normalization.</param>
+        /// <returns>Angle in radians</returns>
+        public double AngleR(Vector3d v2, bool normalized = false)
         {
-            double fDot = MathUtil.Clamp(Dot(v2), -1, 1);
+            double fDot = MathUtil.Clamp(normalized ? Dot(v2) : Normalized.Dot(v2.Normalized), -1, 1);
             return Math.Acos(fDot);
         }
-        public static double AngleR(Vector3d v1, Vector3d v2)
+
+        /// <summary>
+        /// Finds the angle between two vectors
+        /// </summary>
+        /// <param name="v1">The first vector</param>
+        /// <param name="v2">The second vector</param>
+        /// <param name="normalized">Whether both vectors are already normalized; if this can be assumed, set this to true to avoid cost of normalization.</param>
+        /// <returns>Angle in radians</returns>
+        public static double AngleR(Vector3d v1, Vector3d v2, bool normalized = false)
         {
-            return v1.AngleR(v2);
+            return v1.AngleR(v2, normalized);
         }
 
 		public double DistanceSquared(Vector3d v2) {
