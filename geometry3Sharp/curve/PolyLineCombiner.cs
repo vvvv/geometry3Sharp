@@ -12,7 +12,16 @@ namespace g3
             foreach (var polyline in polylines)
                 MergeAppendPolyline(graph, polyline, mergeThreshold);
             var curves = DGraph2Util.ExtractCurves(graph);
-            return curves.Paths;
+
+            var result = new List<PolyLine2d>();
+            result.AddRange(curves.Paths);
+            result.AddRange(curves.Loops.ConvertAll(PolyLineToPolygonConverter));
+            return result;
+        }
+
+        private static PolyLine2d PolyLineToPolygonConverter(Polygon2d polygon)
+        {
+            return new PolyLine2d(polygon.VerticesItr(true));
         }
 
         private static int MergeAppendVertex(DGraph2 graph, Vector2d vertex, double mergeThreshold)
