@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "geometry3Sharp", "geometry3Sharp\geometry3Sharp.csproj", "{BB77C542-83F2-4B85-8DA3-60079F298C6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "geometry3Sharp.Tests", "geometry3Sharp.Tests\geometry3Sharp.Tests.csproj", "{84398736-45B1-48F6-8997-8A7D3CA5B866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "geometry3Sharp.Tests", "geometry3Sharp.Tests\geometry3Sharp.Tests.csproj", "{84398736-45B1-48F6-8997-8A7D3CA5B866}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
