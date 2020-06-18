@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <PackageId>Sutro.geometry3Sharp</PackageId>
-    <Version>1.0.13</Version>
-    <AssemblyName>Sutro.geometry3Sharp</AssemblyName>
+    <Version>1.0.14</Version>
     <PackageDescription>C# library for 3D geometric computation, mesh algorithms, etc.</PackageDescription>
     <RepositoryUrl>https://github.com/SutroMachine/geometry3Sharp</RepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-    <PropertyGroup>
+  <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -25,10 +24,7 @@
     <Copyright>Copyright © Ryan Schmidt/gradientspace  2016</Copyright>
     <Description>C# library for 3D geometric computation, mesh algorithms, etc.</Description>
     <Authors>Ryan Schmidt</Authors>
-    <DelaySign>false</DelaySign>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <SignAssembly>false</SignAssembly>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
