@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 
 namespace g3.curve.UnitTests
@@ -139,6 +138,5 @@ namespace g3.curve.UnitTests
             // Assert
             Assert.AreEqual(3, result.Count);
         }
-
     }
 }

@@ -2,24 +2,26 @@
 <NDepend AppName="geometry3Sharp" Platform="DotNet" FileWrittenByProductVersion="2020.1.0.9404">
   <OutputDir KeepXmlFiles="False">.\NDependOut</OutputDir>
   <IDEFiles>
-    <IDEFile FilePath="..\..\geometry3Sharp\geometry3Sharp.sln" Filters="-test" Configuration="DEBUG|AnyCPU" />
+    <IDEFile FilePath=".\geometry3Sharp.sln" Filters="-test" Configuration="DEBUG|AnyCPU" />
   </IDEFiles>
   <Assemblies />
-  <FrameworkAssemblies />
+  <FrameworkAssemblies>
+    <Name>netstandard</Name>
+  </FrameworkAssemblies>
   <Dirs>
-    <Dir>C:\windows\Microsoft.NET\Framework\v4.0.30319</Dir>
-    <Dir>C:\windows\Microsoft.NET\Framework\v4.0.30319\WPF</Dir>
+    <Dir>C:\Program Files\dotnet\shared\Microsoft.NETCore.App\3.0.3</Dir>
+    <Dir>C:\Program Files\dotnet\sdk\NuGetFallbackFolder</Dir>
     <Dir>C:\Users\grego\.nuget\packages</Dir>
   </Dirs>
   <MergeCodeGeneratedByCompiler>True</MergeCodeGeneratedByCompiler>
   <ZipSourceFiles>True</ZipSourceFiles>
   <Report Kind="0" SectionsEnabled="110591" XslPath="" Flags="261120" />
-  <BuildComparisonSetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\2020_06\17_12_03\NDependAnalysisResult_geometry3Sharp_2020Jun17_12h03.ndar" NDaysAgo="30" />
-  <BaselineInUISetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\2020_06\17_12_03\NDependAnalysisResult_geometry3Sharp_2020Jun17_12h03.ndar" NDaysAgo="30" />
+  <BuildComparisonSetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h10.ndar" NDaysAgo="30" />
+  <BaselineInUISetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h10.ndar" NDaysAgo="30" />
   <CoverageFiles CoverageDir="" UncoverableAttribute="">
-    <CoverageFile>..\..\geometry3Sharp\Coverage\Coverage.coveragexml</CoverageFile>
+    <CoverageFile>.\Coverage\Coverage.coveragexml</CoverageFile>
   </CoverageFiles>
-  <TrendMetrics UseCustomLog="True" LogRecurrence="1" LogLabel="3" UseCustomDir="False" CustomDir="">
+  <TrendMetrics UseCustomLog="True" LogRecurrence="3" LogLabel="3" UseCustomDir="False" CustomDir="">
     <Chart Name="Size" ShowInReport="True">
       <Serie MetricName="# Lines of Code" MetricUnit="Loc" Color="#FF00BFFF" ChartType="Line" ScaleExp="0" />
       <Serie MetricName="# Lines of Code Covered" MetricUnit="Loc" Color="#FF32CD32" ChartType="Area" ScaleExp="0" />
@@ -5619,7 +5621,7 @@ select new {
 // <Id>ND1608:Types100PercentCoveredShouldBeTaggedWithFullCoveredAttribute</Id>
 
 warnif count > 0 from t in JustMyCode.Types where
- !t.HasAttribute ("NDepend.Attributes.FullCoveredAttribute".AllowNoMatch()) &&
+ !t.HasAttribute ("g3.FullCoveredAttribute".AllowNoMatch()) &&
   t.PercentageCoverage == 100 &&
  !t.IsGeneratedByCompiler
 select new { 
