@@ -138,6 +138,7 @@ namespace g3
         /// unless the 'other' end of those junctions is dangling.
         /// Also, horribly innefficient!
         /// </summary>
+        [Obsolete("This method is known to give incorrect results; use PolyLineCombiner.CombineConnectedPolyLines intead.")]
         public static void ChainOpenPaths(Curves c, double epsilon = MathUtil.Epsilon)
         {
             List<PolyLine2d> to_process = new List<PolyLine2d>(c.Paths);
