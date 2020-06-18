@@ -16,8 +16,8 @@
   <MergeCodeGeneratedByCompiler>True</MergeCodeGeneratedByCompiler>
   <ZipSourceFiles>True</ZipSourceFiles>
   <Report Kind="0" SectionsEnabled="110591" XslPath="" Flags="261120" />
-  <BuildComparisonSetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h10.ndar" NDaysAgo="30" />
-  <BaselineInUISetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h10.ndar" NDaysAgo="30" />
+  <BuildComparisonSetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\2020_06\17_17_18\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h18.ndar" NDaysAgo="30" />
+  <BaselineInUISetting ProjectMode="CurrentProject" BuildMode="ParticularAnalysisResult" ProjectFileToCompareWith=".\geometry3Sharp.ndproj" BuildFileToCompareWith=".\NDependOut\2020_06\17_17_18\NDependAnalysisResult_geometry3Sharp_2020Jun17_17h18.ndar" NDaysAgo="30" />
   <CoverageFiles CoverageDir="" UncoverableAttribute="">
     <CoverageFile>.\Coverage\Coverage.coveragexml</CoverageFile>
   </CoverageFiles>
