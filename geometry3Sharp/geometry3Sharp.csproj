@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Sutro.geometry3Sharp</PackageId>
-    <Version>1.0.14</Version>
+    <Version>1.0.15</Version>
     <PackageDescription>C# library for 3D geometric computation, mesh algorithms, etc.</PackageDescription>
     <RepositoryUrl>https://github.com/SutroMachine/geometry3Sharp</RepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Company>gradientspace</Company>
     <Copyright>Copyright © Ryan Schmidt/gradientspace  2016</Copyright>
