@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Sutro.geometry3Sharp</PackageId>
-    <Version>1.0.15</Version>
+    <Version>1.0.16</Version>
     <PackageDescription>C# library for 3D geometric computation, mesh algorithms, etc.</PackageDescription>
     <RepositoryUrl>https://github.com/SutroMachine/geometry3Sharp</RepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

@@ -2,9 +2,11 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace g3
 {
+    [DebuggerDisplay("{x} {y}")]
     public struct Vector2d : IComparable<Vector2d>, IEquatable<Vector2d>
     {
         public double x;

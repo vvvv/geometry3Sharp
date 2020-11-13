@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace g3
@@ -10,6 +11,7 @@ namespace g3
     /// Unfortunately I can't see a way to do this w/o so much duplication...we could
     /// have .x/.y/.z accessors but that is much less efficient...
     /// </summary>
+    [DebuggerDisplay("{x} {y} {z}")]
     public struct Vector3i : IComparable<Vector3i>, IEquatable<Vector3i>
     {
         public int x;

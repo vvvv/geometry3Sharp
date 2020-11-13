@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 #if G3_USING_UNITY
@@ -8,6 +9,7 @@ using UnityEngine;
 
 namespace g3
 {
+    [DebuggerDisplay("{x} {y} {z}")]
     public struct Vector3f : IComparable<Vector3f>, IEquatable<Vector3f>
     {
         public float x;

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace g3
 {
+    [DebuggerDisplay("{x} {y}")]
     public struct Vector2i : IComparable<Vector2i>, IEquatable<Vector2i>
     {
         public int x;
