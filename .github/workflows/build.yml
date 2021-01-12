@@ -1,18 +1,24 @@
-name: Build & Test
+name: Build & Publish
 
-on:
-  push:
-    branch:
-        - '**'
-    tags-ignore:
-        - v*
+on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Build project
+      - uses: actions/checkout@v2
+      - name: Git LFS pull
+        run: git lfs pull
+      - name: Build solution
         run: dotnet build -c Release
-      - name: Test project
-        run: dotnet test -c Release
+      - name: Unit tests
+        run: dotnet test -c Release geometry3Sharp.Tests/geometry3Sharp.Tests.csproj --no-build
+      - name: Publish on version change
+        uses: rohith/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: geometry3Sharp/geometry3Sharp.csproj # Relative to repository root
+          VERSION_REGEX: <Version>(.*)<\/Version> # Regex pattern to extract version info in a capturing group
+          TAG_COMMIT: true # Flag to enable / disable git tagging
+          TAG_FORMAT: v* # Format of the git tag, [*] gets replaced with version
+          INCLUDE_SYMBOLS: true
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}} # nuget.org API key
