@@ -21,8 +21,6 @@ namespace g3
         public static CurveCollection ExtractCurves(DGraph2 graph)
         {
             CurveCollection c = new CurveCollection();
-            c.Loops = new List<Polygon2d>();
-            c.Paths = new List<PolyLine2d>();
 
             HashSet<int> used = new HashSet<int>();
 
@@ -136,7 +134,7 @@ namespace g3
         public static void ChainOpenPaths(CurveCollection c, double epsilon = MathUtil.Epsilon)
         {
             List<PolyLine2d> to_process = new List<PolyLine2d>(c.Paths);
-            c.Paths = new List<PolyLine2d>();
+            c.Paths.Clear();
 
             // first we separate out 'dangling' curves that have no match on at least one side
             List<PolyLine2d> dangling = new List<PolyLine2d>();

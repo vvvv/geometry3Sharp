@@ -7,8 +7,14 @@ namespace g3
     /// </summary>
     public class CurveCollection
     {
-        public List<Polygon2d> Loops { get; set; } = new List<Polygon2d>();
+        public List<Polygon2d> Loops { get; } = new List<Polygon2d>();
 
-        public List<PolyLine2d> Paths { get; set; } = new List<PolyLine2d>();
+        public List<PolyLine2d> Paths { get; } = new List<PolyLine2d>();
+
+        public void Add(CurveCollection other)
+        {
+            Loops.AddRange(other.Loops);
+            Paths.AddRange(other.Paths);
+        }
     }
 }
