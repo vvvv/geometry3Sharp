@@ -12,21 +12,15 @@ namespace g3
     /// </summary>
     public static class DGraph2Util
     {
-
-
-        public class Curves
-        {
-            public List<Polygon2d> Loops;
-            public List<PolyLine2d> Paths;
-        }
-
+        [Obsolete("Use CurveCollection instead", false)]
+        public class Curves : CurveCollection { }
 
         /// <summary>
         /// Decompose graph into simple polylines and polygons. 
         /// </summary>
-        public static Curves ExtractCurves(DGraph2 graph)
+        public static CurveCollection ExtractCurves(DGraph2 graph)
         {
-            Curves c = new Curves();
+            CurveCollection c = new CurveCollection();
             c.Loops = new List<Polygon2d>();
             c.Paths = new List<PolyLine2d>();
 
@@ -139,7 +133,7 @@ namespace g3
         /// Also, horribly innefficient!
         /// </summary>
         [Obsolete("This method is known to give incorrect results; use PolyLineCombiner.CombineConnectedPolyLines intead.")]
-        public static void ChainOpenPaths(Curves c, double epsilon = MathUtil.Epsilon)
+        public static void ChainOpenPaths(CurveCollection c, double epsilon = MathUtil.Epsilon)
         {
             List<PolyLine2d> to_process = new List<PolyLine2d>(c.Paths);
             c.Paths = new List<PolyLine2d>();
