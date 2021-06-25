@@ -285,6 +285,26 @@ namespace g3
             return new Vector2f((float)v.x, (float)v.y);
         }
 
+        public Vector2d RotateByAngleDegrees(double angleDeg)
+        {
+            return RotateByAngleRadians(angleDeg * MathUtil.Deg2Rad);
+        }
+
+        public Vector2d RotateByAngleRadians(double angleRad)
+        {
+            double cos = Math.Cos(angleRad);
+            double sin = Math.Sin(angleRad);
+
+            return new Vector2d(
+                x * cos - y * sin,
+                x * sin + y * cos);
+        }
+
+        public double SignedAngleRadians(Vector2d other)
+        {
+            double angle = AngleR(other);
+            return Cross(other) > 0 ? angle : -angle;
+        }
 
 #if G3_USING_UNITY
         public static implicit operator Vector2d(UnityEngine.Vector2 v)

@@ -45,5 +45,19 @@ namespace geometry3Sharp.Tests
             double angle = vector1.AngleR(vector2, true);
             Assert.AreEqual(Math.PI / 4, angle, delta);
         }
+
+        [TestMethod]
+        public void ProjectIntoPlane()
+        {
+            // Arrange
+            var plane = new Vector3d(0, 1, 0);
+            var subject = new Vector3d(1, 2, 3);
+
+            // Act
+            var result = subject.ProjectIntoPlane(plane);
+
+            Assert.AreEqual(1, result.x, delta);
+            Assert.AreEqual(3, result.y, delta);
+        }
     }
 }

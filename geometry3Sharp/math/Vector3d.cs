@@ -438,6 +438,17 @@ namespace g3
             return new Vector3d(s * a.x + t * b.x, s * a.y + t * b.y, s * a.z + t * b.z);
         }
 
+        /// <summary>
+        /// Gets the xy component of this vector projected into a plane defined by a normal.
+        /// </summary>
+        /// <param name="planeNormal"></param>
+        /// <returns></returns>
+        public Vector2d ProjectIntoPlane(Vector3d planeNormal)
+        {
+            var frame = new Frame3d(Zero, planeNormal);
+            return frame.FromFrameV(this).xy;
+        }
+
         public override string ToString()
         {
             return string.Format("{0:F8} {1:F8} {2:F8}", x, y, z);

@@ -339,7 +339,56 @@ namespace g3
             return this;
         }
 
+        public List<Vector2d> PointsAtInterval(double interval, bool inclusive = false)
+        {
+            var points = new List<Vector2d>();
 
+            double distanceSinceLast = 0;
+
+            foreach (var seg in SegmentItr())
+            {
+                int nPoints = (int)Math.Floor((seg.Length + distanceSinceLast) / interval);
+
+                if (nPoints > 0)
+                {
+                    for (int i = 0; i < nPoints; i++)
+                    {
+                        double d = interval * (i + 1) - distanceSinceLast;
+                        points.Add(seg.P0 + seg.Direction * d);
+                    }
+
+                    double distanceOfLast = interval * nPoints - distanceSinceLast;
+
+                    distanceSinceLast = seg.Length - distanceOfLast;
+                }
+                else
+                {
+                    distanceSinceLast += seg.ArcLength;
+                }
+            }
+
+            // Remove the last point if it is at the end of the polyline
+            if (!inclusive && points.Count > 0 && points[^1].Distance(vertices[^1]) < interval / 2d)
+            {
+                points.RemoveAt(points.Count - 1);
+            }
+
+            return points;
+        }
+
+        public PolyLine2d MirrorAcrossFirstSegment()
+        {
+            var frame = new Frame2d(vertices[0], vertices[1] - vertices[0]);
+
+            var mirrored = new PolyLine2d();
+            foreach (var vertex in vertices)
+            {
+                var p0 = frame.ToFrameP(vertex);
+                var p1 = frame.FromFrameP(new Vector2d(p0.x, -p0.y));
+                mirrored.AppendVertex(p1);
+            }
+            return mirrored;
+        }
 
         static public PolyLine2d MakeBoxSpiral(Vector2d center, double len, double spacing)
         {
