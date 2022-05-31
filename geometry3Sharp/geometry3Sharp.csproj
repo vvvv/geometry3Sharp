@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Company>gradientspace</Company>
     <Copyright>Copyright © Ryan Schmidt/gradientspace  2016</Copyright>

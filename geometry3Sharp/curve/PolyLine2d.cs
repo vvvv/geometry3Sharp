@@ -368,10 +368,17 @@ namespace g3
             }
 
             // Remove the last point if it is at the end of the polyline
+#if NET6_0
             if (!inclusive && points.Count > 0 && points[^1].Distance(vertices[^1]) < interval / 2d)
             {
                 points.RemoveAt(points.Count - 1);
             }
+#elif NETSTANDARD2_0
+            if (!inclusive && points.Count > 0 && points[points.Count - 1].Distance(vertices[points.Count - 1]) < interval / 2d)
+            {
+                points.RemoveAt(points.Count - 1);
+            }
+#endif
 
             return points;
         }
