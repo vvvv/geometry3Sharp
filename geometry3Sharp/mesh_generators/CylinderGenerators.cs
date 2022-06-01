@@ -1,11 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace g3
 {
-    // generate a cylinder 
+    /// <summary>
+    /// Generate a Cylinder without caps. Supports sections of cylinder (eg wedges) as well as
+    /// vertical divisions (Rings). Curently UV islands are overlapping for different mesh 
+    /// components, if NoSharedVertices
+    /// Positioned along Y axis such that base-center is at Origin, and top is at Y=Height
+    /// You get a cone unless BaseRadius = TopRadius
+    /// </summary>
     public class OpenCylinderGenerator : MeshGenerator
     {
         public float BaseRadius = 1.0f;
@@ -14,6 +18,7 @@ namespace g3
         public float StartAngleDeg = 0.0f;
         public float EndAngleDeg = 360.0f;
         public int Slices = 16;
+        public int Rings = 2;
 
         // set to true if you are going to texture this cylinder, otherwise
         // last panel will not have UVs going from 1 to 0
@@ -23,37 +28,62 @@ namespace g3
         {
             bool bClosed = ((EndAngleDeg - StartAngleDeg) > 359.99f);
             int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
-            vertices = new VectorArray3d(2 * nRingSize);
+            vertices = new VectorArray3d(nRingSize * Rings);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
-            triangles = new IndexArray3i(2 * Slices);
+            triangles = new IndexArray3i(2 * Slices * Rings);
 
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
             float fDelta = (bClosed) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
-            for (int k = 0; k < nRingSize; ++k) {
+
+            float fYSpan = Height;
+            if (fYSpan == 0)
+                fYSpan = 1.0f;
+
+            // Y distance between each ring
+            float vStepSize = Height / (Rings - 1);
+            // amount to increase/decrease radius by on each ring starting from the base
+            float radiusStep = (BaseRadius - TopRadius) / (Rings - 1);
+
+            // iterates over each ring vertex
+            for (int k = 0; k < nRingSize; ++k)
+            {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                vertices[k] = new Vector3d(BaseRadius * cosa, 0, BaseRadius * sina);
-                vertices[nRingSize + k] = new Vector3d(TopRadius * cosa, Height, TopRadius * sina);
                 float t = (float)k / (float)Slices;
-                uv[k] = new Vector2f(t, 0.0f);
-                uv[nRingSize + k] = new Vector2f(t, 1.0f);
+
                 Vector3f n = new Vector3f((float)cosa, 0, (float)sina);
                 n.Normalize();
-                normals[k] = normals[nRingSize + k] = n;
+
+                //handle v tessellation
+                float currentRadius = BaseRadius;
+                // iterates on y axis through each ring
+                for (int i = 0; i < Rings; i++)
+                {
+                    float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                    vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
+                    uv[nRingSize * i + k] = new Vector2f(1- t, yt); //TODO: This needs to be handled with an enum
+                    normals[nRingSize * i + k] = n;
+                    currentRadius -= radiusStep;
+                }
             }
 
             int ti = 0;
-            for (int k = 0; k < nRingSize - 1; ++k) {
-                triangles.Set(ti++, k, k + 1, nRingSize + k + 1, Clockwise);
-                triangles.Set(ti++, k, nRingSize + k + 1, nRingSize + k, Clockwise);
+            for (int k = 0; k < nRingSize - 1; ++k)
+            {
+                for (int i = 0; i < Rings; i++)
+                {
+                    var k1 = k + nRingSize * i;
+                    triangles.Set(ti++, k1, k1 + 1, nRingSize + k1 + 1, Clockwise);
+                    triangles.Set(ti++, k1, nRingSize + k1 + 1, nRingSize + k1, Clockwise);
+                }
             }
-            if (bClosed && NoSharedVertices == false) {      // close disc if we went all the way
+            if (bClosed && NoSharedVertices == false)
+            {   // close disc if we went all the way
                 triangles.Set(ti++, nRingSize - 1, 0, nRingSize, Clockwise);
                 triangles.Set(ti++, nRingSize - 1, nRingSize, 2 * nRingSize - 1, Clockwise);
             }
-
             return this;
         }
     }
