@@ -195,6 +195,7 @@ namespace g3
             normals[nTopC] = new Vector3f(0, 1, 0);
 
             if (NoSharedVertices) {
+                //bottom disc
                 int nStartB = nRingSize * Rings + 2;
                 for (int k = 0; k < Slices; ++k) {
                     float a = fStartRad + (float)k * fDelta;
@@ -205,6 +206,7 @@ namespace g3
                 }
                 append_disc(Slices, nBottomC, nStartB, bClosed, Clockwise, ref ti, 2);
 
+                //top disc
                 int nStartT = nRingSize * Rings + 2 + Slices;
                 for (int k = 0; k < Slices; ++k) {
                     float a = fStartRad + (float)k * fDelta;
@@ -238,14 +240,14 @@ namespace g3
                         vertices[nStartF + 6] = vertices[nRingSize * i - 1]; //b
                         vertices[nStartF + 7] = vertices[nRingSize * (i + 1) - 1]; //top-b
 
-                        normals[nStartF]     = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF]     = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
+                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
+                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
+                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
+                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
+                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
+                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
+                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
 
                         uv[nStartF]     = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
                         uv[nStartF + 1] = new Vector2f(0, yt); //vertex:top uv:bottom-right
@@ -344,7 +346,7 @@ namespace g3
                     uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: verify uv calculation
                     Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
                     n.Normalize();
-                    normals[nRingSize * i + k] = n; //TODO: verify normal calculation
+                    normals[nRingSize * i + k] = n;
                     currentRadius -= radiusStep;
                 }
             }
