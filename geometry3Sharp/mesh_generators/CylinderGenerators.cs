@@ -220,29 +220,41 @@ namespace g3
                 if (bClosed == false) 
                 {
                     int nStartF = nRingSize * Rings + 2 + 2 * Slices;
+                    
                     for (int i = 1; i < Rings; i++)
                     {
+                        float yb = vStepSize * (i - 1) / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                        float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+
                         //rectangle 1
-                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //alpha 
-                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //alpha1
-                        vertices[nStartF + 2] = vertices[nRingSize * i]; //a1
+                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //bottom 
+                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                        vertices[nStartF + 2] = vertices[nRingSize * i]; //top-a
                         vertices[nStartF + 3] = vertices[nRingSize * (i - 1)]; //a
 
                         //rectangle 2
-                        vertices[nStartF + 4] = new Vector3d(0, ringBottom + vStepSize, 0); //alpha1
-                        vertices[nStartF + 5] = new Vector3d(0, ringBottom, 0); //alpha
+                        vertices[nStartF + 4] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                        vertices[nStartF + 5] = new Vector3d(0, ringBottom, 0); //bottom
                         vertices[nStartF + 6] = vertices[nRingSize * i - 1]; //b
-                        vertices[nStartF + 7] = vertices[nRingSize * (i + 1) - 1]; //b1
+                        vertices[nStartF + 7] = vertices[nRingSize * (i + 1) - 1]; //top-b
 
-                        normals[nStartF] = normals[nStartF + 1] = normals[nStartF + 2] = normals[nStartF + 3]
-                            = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 4] = normals[nStartF + 5] = normals[nStartF + 6] = normals[nStartF + 7]
-                            = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF]     = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
 
-                        uv[nStartF] = uv[nStartF + 5] = new Vector2f(0, 0);
-                        uv[nStartF + 1] = uv[nStartF + 4] = new Vector2f(0, 1);
-                        uv[nStartF + 2] = uv[nStartF + 7] = new Vector2f(1, 1);
-                        uv[nStartF + 3] = uv[nStartF + 6] = new Vector2f(1, 0);
+                        uv[nStartF]     = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                        uv[nStartF + 1] = new Vector2f(0, yt); //vertex:top uv:bottom-right
+                        uv[nStartF + 2] = new Vector2f(1, yt); //vertex:top-a uv:top-right
+                        uv[nStartF + 3] = new Vector2f(1, yb); //vertex:a uv:bottom-right
+                        uv[nStartF + 4] = new Vector2f(0, yt); //vertex:top uv:top-left
+                        uv[nStartF + 5] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                        uv[nStartF + 6] = new Vector2f(1, yb); //vertex:b uv:bottom-right
+                        uv[nStartF + 7] = new Vector2f(1, yt); //vertex:top-b uv:top-right 
 
                         append_rectangle(nStartF + 0, nStartF + 1, nStartF + 2, nStartF + 3, !Clockwise, ref ti, 4);
                         append_rectangle(nStartF + 4, nStartF + 5, nStartF + 6, nStartF + 7, !Clockwise, ref ti, 5);
@@ -321,13 +333,15 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
+                float t = (float)k / (float)Slices;
 
                 float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
                 {
+                    
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1 + sina)); //TODO: verify uv calculation
+                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: verify uv calculation
                     Vector3f n = new Vector3f(cosa * Height, currentRadius / Height, sina * Height);
                     n.Normalize();
                     normals[nRingSize * i + k] = n; //TODO: verify normal calculation
@@ -382,24 +396,31 @@ namespace g3
                 if (bClosed == false)
                 {
                     int nStartF = nStartB + Slices;
+                    float currentRadius = BaseRadius;
+
                     for (int i = 1; i < Rings; i++)
                     {
+                        float yb = vStepSize * (i - 1) / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                        float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                        float xa = currentRadius / BaseRadius;
+                        float xa1 = (currentRadius - radiusStep) / BaseRadius;
+
                         //face 1 - triangle 1
-                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //alpha 
-                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //alpha1
-                        vertices[nStartF + 2] = vertices[nRingSize * i]; //a1
+                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //bottom 
+                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                        vertices[nStartF + 2] = vertices[nRingSize * i]; //top-a
                         //face 1 - triangle 2
-                        vertices[nStartF + 3] = new Vector3d(0, ringBottom, 0); //alpha 
-                        vertices[nStartF + 4] = vertices[nRingSize * i]; //a1
+                        vertices[nStartF + 3] = new Vector3d(0, ringBottom, 0); //bottom 
+                        vertices[nStartF + 4] = vertices[nRingSize * i]; //top-a
                         vertices[nStartF + 5] = vertices[nRingSize * (i - 1)]; //a
                         //face 2 -triangle 1
-                        vertices[nStartF + 6] = new Vector3d(0, ringBottom + vStepSize, 0); //alpha1
-                        vertices[nStartF + 7] = new Vector3d(0, ringBottom, 0); //alpha
+                        vertices[nStartF + 6] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                        vertices[nStartF + 7] = new Vector3d(0, ringBottom, 0); //bottom
                         vertices[nStartF + 8] = vertices[nRingSize * i - 1]; //b
                         //face 2 -triangle 2
-                        vertices[nStartF + 9] = new Vector3d(0, ringBottom + vStepSize, 0); //alpha1
+                        vertices[nStartF + 9] = new Vector3d(0, ringBottom + vStepSize, 0); //top
                         vertices[nStartF + 10] = vertices[nRingSize * i - 1]; //b
-                        vertices[nStartF + 11] = vertices[nRingSize * (i + 1) - 1]; //b1
+                        vertices[nStartF + 11] = vertices[nRingSize * (i + 1) - 1]; //top-b
 
                         normals[nStartF] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
                         normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
@@ -414,18 +435,18 @@ namespace g3
                         normals[nStartF + 10] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
                         normals[nStartF + 11] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
 
-                        uv[nStartF] = new Vector2f(0, 0);
-                        uv[nStartF + 1] = new Vector2f(0, 1);
-                        uv[nStartF + 2] = new Vector2f(1, 0);
-                        uv[nStartF + 3] = new Vector2f(0, 1);
-                        uv[nStartF + 4] = new Vector2f(0, 0);
-                        uv[nStartF + 5] = new Vector2f(1, 0);
-                        uv[nStartF + 6] = new Vector2f(1, 0);
-                        uv[nStartF + 7] = new Vector2f(1, 0);
-                        uv[nStartF + 8] = new Vector2f(1, 0);
-                        uv[nStartF + 9]  = new Vector2f(1, 0);
-                        uv[nStartF + 10] = new Vector2f(1, 0);
-                        uv[nStartF + 11] = new Vector2f(1, 0);
+                        uv[nStartF]      = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
+                        uv[nStartF + 1]  = new Vector2f(0, yt); //vertex:top uv:top-left  !
+                        uv[nStartF + 2]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right 
+                        uv[nStartF + 3]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
+                        uv[nStartF + 4]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right 
+                        uv[nStartF + 5]  = new Vector2f(xa, yb); //vertex:a uv:bottom-right 
+                        uv[nStartF + 6]  = new Vector2f(0, yt); //vertex:top uv:top-left !
+                        uv[nStartF + 7]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
+                        uv[nStartF + 8]  = new Vector2f(xa, yb); //vertex:b uv:bottom-right 
+                        uv[nStartF + 9]  = new Vector2f(0, yt); //vertex:top uv:top-left !
+                        uv[nStartF + 10] = new Vector2f(xa, yb); //vertex:b uv:bottom-right 
+                        uv[nStartF + 11] = new Vector2f(xa1, yt); //vertex:top-b uv:top-right 
 
                         triangles.Set(ti++, nStartF + 0, nStartF + 1, nStartF + 2, !Clockwise); //open face
                         triangles.Set(ti++, nStartF + 3, nStartF + 4, nStartF + 5, !Clockwise); //open face
@@ -434,6 +455,7 @@ namespace g3
 
                         ringBottom += vStepSize;
                         nStartF += 12;
+                        currentRadius -= radiusStep;
                     }
                 }
 
