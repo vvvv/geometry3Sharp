@@ -435,18 +435,18 @@ namespace g3
                         normals[nStartF + 10] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
                         normals[nStartF + 11] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
 
-                        uv[nStartF]      = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
-                        uv[nStartF + 1]  = new Vector2f(0, yt); //vertex:top uv:top-left  !
-                        uv[nStartF + 2]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right 
-                        uv[nStartF + 3]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
-                        uv[nStartF + 4]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right 
-                        uv[nStartF + 5]  = new Vector2f(xa, yb); //vertex:a uv:bottom-right 
-                        uv[nStartF + 6]  = new Vector2f(0, yt); //vertex:top uv:top-left !
-                        uv[nStartF + 7]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left !
-                        uv[nStartF + 8]  = new Vector2f(xa, yb); //vertex:b uv:bottom-right 
-                        uv[nStartF + 9]  = new Vector2f(0, yt); //vertex:top uv:top-left !
-                        uv[nStartF + 10] = new Vector2f(xa, yb); //vertex:b uv:bottom-right 
-                        uv[nStartF + 11] = new Vector2f(xa1, yt); //vertex:top-b uv:top-right 
+                        uv[nStartF]      = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                        uv[nStartF + 1]  = new Vector2f(0, yt); //vertex:top uv:top-left
+                        uv[nStartF + 2]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right
+                        uv[nStartF + 3]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                        uv[nStartF + 4]  = new Vector2f(xa1, yt); //vertex:top-a uv:top-right
+                        uv[nStartF + 5]  = new Vector2f(xa, yb); //vertex:a uv:bottom-right
+                        uv[nStartF + 6]  = new Vector2f(0, yt); //vertex:top uv:top-left
+                        uv[nStartF + 7]  = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                        uv[nStartF + 8]  = new Vector2f(xa, yb); //vertex:b uv:bottom-right
+                        uv[nStartF + 9]  = new Vector2f(0, yt); //vertex:top uv:top-left
+                        uv[nStartF + 10] = new Vector2f(xa, yb); //vertex:b uv:bottom-right
+                        uv[nStartF + 11] = new Vector2f(xa1, yt); //vertex:top-b uv:top-right
 
                         triangles.Set(ti++, nStartF + 0, nStartF + 1, nStartF + 2, !Clockwise); //open face
                         triangles.Set(ti++, nStartF + 3, nStartF + 4, nStartF + 5, !Clockwise); //open face
