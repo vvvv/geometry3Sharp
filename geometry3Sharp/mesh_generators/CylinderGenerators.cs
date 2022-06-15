@@ -342,7 +342,7 @@ namespace g3
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: verify uv calculation
-                    Vector3f n = new Vector3f(cosa * Height, currentRadius / Height, sina * Height);
+                    Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
                     n.Normalize();
                     normals[nRingSize * i + k] = n; //TODO: verify normal calculation
                     currentRadius -= radiusStep;
