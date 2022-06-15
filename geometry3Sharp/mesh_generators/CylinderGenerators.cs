@@ -53,8 +53,7 @@ namespace g3
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 float t = (float)k / (float)Slices;
 
-                Vector3f n = new Vector3f((float)cosa, 0, (float)sina);
-                n.Normalize();
+                
 
                 //handle v tessellation
                 float currentRadius = BaseRadius;
@@ -64,6 +63,8 @@ namespace g3
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     uv[nRingSize * i + k] = new Vector2f(1- t, yt); //TODO: This needs to be handled with an enum
+                    Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
+                    n.Normalize();
                     normals[nRingSize * i + k] = n;
                     currentRadius -= radiusStep;
                 }
@@ -149,9 +150,6 @@ namespace g3
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 float t = (float)k / (float)Slices;
 
-                Vector3f n = new Vector3f((float)cosa, 0, (float)sina);
-                n.Normalize();
-
                 //handle v tessellation
                 float currentRadius = BaseRadius;
                 // iterates on y axis through each ring
@@ -160,6 +158,8 @@ namespace g3
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: This needs to be handled with an enum
+                    Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
+                    n.Normalize();
                     normals[nRingSize * i + k] = n;
                     currentRadius -= radiusStep;
                 }
