@@ -296,6 +296,7 @@ namespace g3
         public float EndAngleDeg = 360.0f;
         public int Slices = 16;
         public int Rings = 2;
+        public LateralSlopeUVModes LateralSlopeUVMode = LateralSlopeUVModes.TopProjected;
 
         // set to true if you are going to texture this cone or want sharp edges
         public bool NoSharedVertices = false;
@@ -343,7 +344,24 @@ namespace g3
                     
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: verify uv calculation
+                    // UV
+                    switch (LateralSlopeUVMode)
+                    {
+                        case LateralSlopeUVModes.SideProjected:
+                            if (i == (Rings - 1))
+                            {
+                                uv[nRingSize * i + k] = new Vector2f(1.0f - (t + (1.0f/(2.0f*Slices))), yt);
+                            }
+                            else
+                            {
+                                uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
+                            }
+                            break;
+                        case LateralSlopeUVModes.TopProjected:
+                        default:
+                            uv[nRingSize * i + k] = new Vector2f(0.5f * (1 + currentRadius * cosa), 1- 0.5 * (1 + currentRadius * sina));
+                            break;
+                    }
                     Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
                     n.Normalize();
                     normals[nRingSize * i + k] = n;
@@ -473,6 +491,12 @@ namespace g3
             }
 
             return this;
+        }
+
+        public enum LateralSlopeUVModes
+        {
+            TopProjected,
+            SideProjected
         }
     }
 
