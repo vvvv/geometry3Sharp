@@ -212,7 +212,7 @@ namespace g3
                     float a = fStartRad + (float)k * fDelta;
                     double cosa = Math.Cos(a), sina = Math.Sin(a);
                     vertices[nStartT + k] = new Vector3d(TopRadius * cosa, Height, TopRadius * sina);
-                    uv[nStartT + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1 + sina));
+                    uv[nStartT + k] = new Vector2f(0.5f * (1.0f + cosa), 1 - 0.5f * (1 + sina));
                     normals[nStartT + k] = Vector3f.AxisY;
                 }
                 append_disc(Slices, nTopC, nStartT, bClosed, !Clockwise, ref ti, 3);
