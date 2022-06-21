@@ -62,7 +62,8 @@ namespace g3
                 {
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(1- t, yt); //TODO: This needs to be handled with an enum
+                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
+                    
                     Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
                     n.Normalize();
                     normals[nRingSize * i + k] = n;
@@ -150,14 +151,13 @@ namespace g3
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 float t = (float)k / (float)Slices;
 
-                //handle v tessellation
-                float currentRadius = BaseRadius;
                 // iterates on y axis through each ring
+                float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
                 {
                     float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt); //TODO: This needs to be handled with an enum
+                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
                     Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
                     n.Normalize();
                     normals[nRingSize * i + k] = n;
