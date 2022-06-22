@@ -240,14 +240,14 @@ namespace g3
                         vertices[nStartF + 6] = vertices[nRingSize * i - 1]; //b
                         vertices[nStartF + 7] = vertices[nRingSize * (i + 1) - 1]; //top-b
 
-                        normals[nStartF]     = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
-                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
-                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
-                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);//TODO: Verify this is correct
-                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
-                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
-                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
-                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);//TODO: Verify this is correct
+                        normals[nStartF]     = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
+                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
+                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
 
                         uv[nStartF]     = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
                         uv[nStartF + 1] = new Vector2f(0, yt); //vertex:top uv:bottom-right
