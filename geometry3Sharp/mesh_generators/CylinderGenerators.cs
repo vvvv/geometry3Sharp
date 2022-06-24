@@ -360,7 +360,7 @@ namespace g3
                             break;
                         case LateralSlopeUVModes.TopProjected:
                         default:
-                            uv[nRingSize * i + k] = new Vector2f(0.5f * (1 + currentRadius * cosa), 1- 0.5 * (1 + currentRadius * sina));
+                            uv[nRingSize * i + k] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1- 0.5 * (1 + (currentRadius / BaseRadius) * sina));
                             break;
                     }
                     Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
