@@ -337,6 +337,7 @@ namespace g3
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 float t = (float)k / (float)Slices;
+                float topUVStep = t - 1.0f / (Slices * 2.0f);
 
                 float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
@@ -350,7 +351,7 @@ namespace g3
                         case LateralSlopeUVModes.SideProjected:
                             if (i == (Rings - 1))
                             {
-                                uv[nRingSize * i + k] = new Vector2f(1.0f - (t + (1.0f/(2.0f*Slices))), yt);
+                                uv[nRingSize * i + k] = new Vector2f(1.0f - topUVStep, yt);
                             }
                             else
                             {
