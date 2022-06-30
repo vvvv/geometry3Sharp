@@ -51,9 +51,7 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)Slices;
-
-                
+                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
 
                 //handle v tessellation
                 float currentRadius = BaseRadius;
@@ -149,7 +147,7 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)Slices;
+                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
 
                 // iterates on y axis through each ring
                 float currentRadius = BaseRadius;
@@ -336,8 +334,8 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)Slices;
-                float topUVStep = t - 1.0f / (Slices * 2.0f);
+                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
+                float topUVStep = t - 1.0f / ((bClosed ? Slices : Slices - 1) * 2.0f);
 
                 float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
