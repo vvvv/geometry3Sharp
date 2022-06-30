@@ -26,7 +26,7 @@ namespace g3
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = ((EndAngleDeg - StartAngleDeg) > 359.99f);
+            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
             int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
             vertices = new VectorArray3d(nRingSize * Rings);
             uv = new VectorArray2f(vertices.Count);
@@ -117,7 +117,7 @@ namespace g3
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = ((EndAngleDeg - StartAngleDeg) > 359.99f);
+            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
             int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
             int nCapVertices = (NoSharedVertices) ? Slices + 1 : 1;
             int nFaceVertices = (NoSharedVertices && bClosed == false) ? 8 * (Rings - 1) : 0;
@@ -304,7 +304,7 @@ namespace g3
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = ((EndAngleDeg - StartAngleDeg) > 359.99f);
+            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
             int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
             int nTipVertices = (NoSharedVertices) ? nRingSize : 1;
             int nCapVertices = (NoSharedVertices) ? Slices + 1 : 1;
