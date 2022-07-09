@@ -19,10 +19,18 @@ namespace g3
         public float EndAngleDeg = 360.0f;
         public int Slices = 16;
         public int Rings = 2;
+        public bool AddSliceWhenOpen = false;
 
         // set to true if you are going to texture this cylinder, otherwise
         // last panel will not have UVs going from 1 to 0
         public bool NoSharedVertices = false;
+
+        private int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
 
         override public MeshGenerator Generate()
         {
@@ -35,7 +43,7 @@ namespace g3
 
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = (bClosed) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
+            float fDelta = fTotalRange / GetSliceCount();
 
             float fYSpan = Height;
             if (fYSpan == 0)
@@ -51,7 +59,7 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
+                float t = (float)k / (float)GetSliceCount();
 
                 //handle v tessellation
                 float currentRadius = BaseRadius;
@@ -109,9 +117,17 @@ namespace g3
         public float EndAngleDeg = 360.0f;
         public int Slices = 16;
         public int Rings = 2;
+        public bool AddSliceWhenOpen = false;
 
         // set to true if you are going to texture this cylinder or want sharp edges
         public bool NoSharedVertices = false;
+
+        private int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
 
         override public MeshGenerator Generate()
         {
@@ -131,7 +147,7 @@ namespace g3
 
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = (bClosed) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
+            float fDelta = fTotalRange / GetSliceCount();
 
             float fYSpan = Height;
             if (fYSpan == 0)
@@ -147,7 +163,7 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
+                float t = (float)k / (float)GetSliceCount();
 
                 // iterates on y axis through each ring
                 float currentRadius = BaseRadius;
@@ -272,7 +288,6 @@ namespace g3
                     append_rectangle(nRingSize - 1, nBottomC, nTopC, 2 * nRingSize - 1, Clockwise, ref ti, 5);
                 }
             }
-
             return this;
         }
     }
@@ -295,10 +310,16 @@ namespace g3
         public int Slices = 16;
         public int Rings = 2;
         public LateralSlopeUVModes LateralSlopeUVMode = LateralSlopeUVModes.TopProjected;
-
+        public bool AddSliceWhenOpen = false;
         // set to true if you are going to texture this cone or want sharp edges
         public bool NoSharedVertices = false;
 
+        private int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
 
         override public MeshGenerator Generate()
         {
@@ -318,7 +339,7 @@ namespace g3
 
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = (bClosed) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
+            float fDelta = fTotalRange / GetSliceCount();
 
             float fYSpan = Height;
             if (fYSpan == 0)
@@ -334,8 +355,8 @@ namespace g3
             {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)(bClosed ? Slices : Slices - 1);
-                float topUVStep = t - 1.0f / ((bClosed ? Slices : Slices - 1) * 2.0f);
+                float t = (float)k / (float)GetSliceCount();
+                float topUVStep = t - 1.0f / (GetSliceCount() * 2.0f);
 
                 float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
