@@ -58,7 +58,7 @@ namespace g3
                 // iterates on y axis through each ring
                 for (int i = 0; i < Rings; i++)
                 {
-                    float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                    float yt = vStepSize * i / fYSpan;
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
                     
@@ -153,7 +153,7 @@ namespace g3
                 float currentRadius = BaseRadius;
                 for (int i = 0; i < Rings; i++)
                 {
-                    float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                    float yt = vStepSize * i / fYSpan;
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
                     Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
@@ -223,8 +223,8 @@ namespace g3
                     
                     for (int i = 1; i < Rings; i++)
                     {
-                        float yb = vStepSize * (i - 1) / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
-                        float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                        float yb = vStepSize * (i - 1) / fYSpan;
+                        float yt = vStepSize * i / fYSpan;
 
                         //rectangle 1
                         vertices[nStartF] = new Vector3d(0, ringBottom, 0); //bottom 
@@ -341,7 +341,7 @@ namespace g3
                 for (int i = 0; i < Rings; i++)
                 {
                     
-                    float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                    float yt = vStepSize * i / fYSpan;
                     vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     // UV
                     switch (LateralSlopeUVMode)
@@ -419,8 +419,8 @@ namespace g3
 
                     for (int i = 1; i < Rings; i++)
                     {
-                        float yb = vStepSize * (i - 1) / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
-                        float yt = vStepSize * i / fYSpan; //TODO: this needs to account for the meshes position, currently assuming range from 0 to Height
+                        float yb = vStepSize * (i - 1) / fYSpan;
+                        float yt = vStepSize * i / fYSpan;
                         float xa = currentRadius / BaseRadius;
                         float xa1 = (currentRadius - radiusStep) / BaseRadius;
 
