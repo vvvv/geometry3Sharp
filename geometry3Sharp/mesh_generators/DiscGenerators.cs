@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace g3
 {
@@ -11,7 +8,15 @@ namespace g3
         public float Radius = 1.0f;
         public float StartAngleDeg = 0.0f;
         public float EndAngleDeg = 360.0f;
-        public int Slices = 32;
+        public int Slices = 32; 
+        public bool AddSliceWhenOpen = false;
+
+        private int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
 
         override public MeshGenerator Generate()
         {
@@ -29,8 +34,9 @@ namespace g3
             bool bFullDisc = ((EndAngleDeg - StartAngleDeg) > 359.99f);
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = (bFullDisc) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
-            for (int k = 0; k < Slices; ++k) {
+            float fDelta = fTotalRange / GetSliceCount();
+            for (int k = 0; k < Slices; ++k)
+            {
                 float a = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(a), sina = Math.Sin(a);
                 vertices[vi] = new Vector3d(Radius * cosa, 0, Radius * sina);
@@ -51,10 +57,6 @@ namespace g3
 
 
 
-
-
-
-
     // generate a triangle fan, no subdvisions
     public class PuncturedDiscGenerator : MeshGenerator
     {
@@ -63,35 +65,46 @@ namespace g3
         public float StartAngleDeg = 0.0f;
         public float EndAngleDeg = 360.0f;
         public int Slices = 32;
+        public bool AddSliceWhenOpen = false;
+
+        private int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
 
         override public MeshGenerator Generate()
         {
-            vertices = new VectorArray3d(2*Slices);
-            uv = new VectorArray2f(2*Slices);
-            normals = new VectorArray3f(2*Slices);
-            triangles = new IndexArray3i(2*Slices);
+            vertices = new VectorArray3d(2 * Slices);
+            uv = new VectorArray2f(2 * Slices);
+            normals = new VectorArray3f(2 * Slices);
+            triangles = new IndexArray3i(2 * Slices);
 
             bool bFullDisc = ((EndAngleDeg - StartAngleDeg) > 359.99f);
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
             float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = (bFullDisc) ? fTotalRange / Slices : fTotalRange / (Slices - 1);
+            float fDelta = fTotalRange / GetSliceCount();
             float fUVRatio = InnerRadius / OuterRadius;
-            for (int k = 0; k < Slices; ++k) {
+            for (int k = 0; k < Slices; ++k)
+            {
                 float angle = fStartRad + (float)k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
-                vertices[Slices+k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
+                vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
                 uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), 0.5f * (1.0f + fUVRatio * sina));
                 uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1.0f + sina));
                 normals[k] = normals[Slices + k] = Vector3f.AxisY;
             }
 
             int ti = 0;
-            for (int k = 0; k < Slices-1; ++k) {
+            for (int k = 0; k < Slices - 1; ++k)
+            {
                 triangles.Set(ti++, k, k + 1, Slices + k + 1, Clockwise);
                 triangles.Set(ti++, k, Slices + k + 1, Slices + k, Clockwise);
             }
-            if (bFullDisc) {      // close disc if we went all the way
+            if (bFullDisc)
+            {      // close disc if we went all the way
                 triangles.Set(ti++, Slices - 1, 0, Slices, Clockwise);
                 triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, Clockwise);
             }
