@@ -156,10 +156,10 @@ namespace g3
         {
             if ( groupid >= 0 )
                 groups[tri_counter] = groupid;
-            triangles.Set(tri_counter++, v0, v1, v2, bCycle);
+            triangles.Set(tri_counter++, v0, v1, v3, bCycle);
             if ( groupid >= 0 )
                 groups[tri_counter] = groupid;
-            triangles.Set(tri_counter++, v0, v2, v3, bCycle);
+            triangles.Set(tri_counter++, v3, v1, v2, bCycle);
         }
 
 
