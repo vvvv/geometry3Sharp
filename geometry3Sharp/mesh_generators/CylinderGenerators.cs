@@ -237,7 +237,6 @@ namespace g3
                 }
                 append_disc(Slices, nTopC, nStartT, bClosed, !Clockwise, ref ti, 3);
 
-                // ugh this is very ugly but hard to see the pattern...
                 float ringBottom = 0;
                 if (bClosed == false)
                 {
