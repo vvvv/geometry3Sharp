@@ -371,7 +371,7 @@ namespace g3
                         case LateralSlopeUVModes.SideProjected:
                             if (i == (Rings - 1))
                             {
-                                uv[nRingSize * i + k] = new Vector2f(1.0f - topUVStep, yt);
+                                uv[nRingSize * i + k - 1] = new Vector2f(1.0f - topUVStep, yt);
                             }
                             else
                             {
