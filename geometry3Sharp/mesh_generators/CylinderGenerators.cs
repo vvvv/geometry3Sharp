@@ -593,8 +593,8 @@ namespace g3
                 ri += (NoSharedVertices) ? 2 : 1;
                 for (int k = 0; k < nRingSize - 1; ++k)
                 {
-                    triangles.Set(ti++, r0 + k, r0 + k + 1, r1 + k + 1, Clockwise);
-                    triangles.Set(ti++, r0 + k, r1 + k + 1, r1 + k, Clockwise);
+                    triangles.Set(ti++, r0 + k, r0 + k + 1, r1 + k, Clockwise);
+                    triangles.Set(ti++, r0 + k + 1, r1 + k + 1, r1 + k, Clockwise);
                 }
                 if (NoSharedVertices == false)
                 {      // close disc if we went all the way
