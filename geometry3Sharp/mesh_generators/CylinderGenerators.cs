@@ -3,6 +3,21 @@ using System.Linq;
 
 namespace g3
 {
+    public abstract class CylindCylindricMeshGenerator : MeshGenerator
+    {
+        public bool AddSliceWhenOpen = false;
+        public float StartAngleDeg = 0.0f;
+        public float EndAngleDeg = 360.0f;
+        public int Slices = 16;
+
+        internal int GetSliceCount()
+        {
+            if (AddSliceWhenOpen)
+                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
+            return Slices;
+        }
+    }
+
     /// <summary>
     /// Generate a Cylinder without caps. Supports sections of cylinder (eg wedges) as well as
     /// vertical divisions (Rings). Curently UV islands are overlapping for different mesh 
@@ -10,27 +25,15 @@ namespace g3
     /// Positioned along Y axis such that base-center is at Origin, and top is at Y=Height
     /// You get a cone unless BaseRadius = TopRadius
     /// </summary>
-    public class OpenCylinderGenerator : MeshGenerator
+    public class OpenCylinderGenerator : CylindCylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
         public float Height = 1.0f;
-        public float StartAngleDeg = 0.0f;
-        public float EndAngleDeg = 360.0f;
-        public int Slices = 16;
         public int Rings = 2;
-        public bool AddSliceWhenOpen = false;
-
         // set to true if you are going to texture this cylinder, otherwise
         // last panel will not have UVs going from 1 to 0
         public bool NoSharedVertices = false;
-
-        private int GetSliceCount()
-        {
-            if (AddSliceWhenOpen)
-                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
-            return Slices;
-        }
 
         override public MeshGenerator Generate()
         {
@@ -109,26 +112,15 @@ namespace g3
     /// No subdivisions along top/base rings or height steps.
     /// cylinder triangles have groupid = 1, top cap = 2, bottom cap = 3, wedge faces 5 and 6
     /// </summary>
-    public class CappedCylinderGenerator : MeshGenerator
+    public class CappedCylinderGenerator : CylindCylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
         public float Height = 1.0f;
-        public float StartAngleDeg = 0.0f;
-        public float EndAngleDeg = 360.0f;
-        public int Slices = 16;
         public int Rings = 2;
-        public bool AddSliceWhenOpen = false;
 
         // set to true if you are going to texture this cylinder or want sharp edges
         public bool NoSharedVertices = false;
-
-        private int GetSliceCount()
-        {
-            if (AddSliceWhenOpen)
-                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
-            return Slices;
-        }
 
         override public MeshGenerator Generate()
         {
@@ -309,25 +301,14 @@ namespace g3
     // This causes the normals to look...weird.
     // For the conical region, we use the planar disc parameterization (ie tip at .5,.5) rather than
     // a cylinder-like projection
-    public class ConeGenerator : MeshGenerator
+    public class ConeGenerator : CylindCylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float Height = 1.0f;
-        public float StartAngleDeg = 0.0f;
-        public float EndAngleDeg = 360.0f;
-        public int Slices = 16;
         public int Rings = 2;
         public LateralSlopeUVModes LateralSlopeUVMode = LateralSlopeUVModes.TopProjected;
-        public bool AddSliceWhenOpen = false;
         // set to true if you are going to texture this cone or want sharp edges
         public bool NoSharedVertices = false;
-
-        private int GetSliceCount()
-        {
-            if (AddSliceWhenOpen)
-                return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
-            return Slices;
-        }
 
         override public MeshGenerator Generate()
         {
