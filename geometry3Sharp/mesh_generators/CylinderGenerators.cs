@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace g3
 {
-    public abstract class CylindCylindricMeshGenerator : MeshGenerator
+    public abstract class CylindricMeshGenerator : MeshGenerator
     {
         public bool AddSliceWhenOpen = false;
         public float StartAngleDeg = 0.0f;
@@ -25,7 +25,7 @@ namespace g3
     /// Positioned along Y axis such that base-center is at Origin, and top is at Y=Height
     /// You get a cone unless BaseRadius = TopRadius
     /// </summary>
-    public class OpenCylinderGenerator : CylindCylindricMeshGenerator
+    public class OpenCylinderGenerator : CylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
@@ -112,7 +112,7 @@ namespace g3
     /// No subdivisions along top/base rings or height steps.
     /// cylinder triangles have groupid = 1, top cap = 2, bottom cap = 3, wedge faces 5 and 6
     /// </summary>
-    public class CappedCylinderGenerator : CylindCylindricMeshGenerator
+    public class CappedCylinderGenerator : CylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
@@ -301,7 +301,7 @@ namespace g3
     // This causes the normals to look...weird.
     // For the conical region, we use the planar disc parameterization (ie tip at .5,.5) rather than
     // a cylinder-like projection
-    public class ConeGenerator : CylindCylindricMeshGenerator
+    public class ConeGenerator : CylindricMeshGenerator
     {
         public float BaseRadius = 1.0f;
         public float Height = 1.0f;
