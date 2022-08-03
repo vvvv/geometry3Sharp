@@ -8,13 +8,207 @@ namespace g3
         public bool AddSliceWhenOpen = false;
         public float StartAngleDeg = 0.0f;
         public float EndAngleDeg = 360.0f;
+        public float Height = 1.0f;
         public int Slices = 16;
+        public int Rings = 2;
+        public float BaseRadius = 1.0f;
+        // set to true if you are going to texture this cylinder, otherwise
+        // last panel will not have UVs going from 1 to 0
+        public bool NoSharedVertices = false;
 
         internal int GetSliceCount()
         {
             if (AddSliceWhenOpen)
                 return EndAngleDeg - StartAngleDeg == 360 ? Slices : Slices - 1;
             return Slices;
+        }
+
+        /// <summary>
+        /// Adds a ring of vertices (with uvs and normals) in a cylinder accounting for start and end angles.
+        /// </summary>
+        /// <param name="radius">Ring's radius</param>
+        /// <param name="y">Y coordinate for all ring's vertices (Ring height).</param>
+        /// <param name="slope">The ratio between the top and bottom radii, and the height of the cylinder</param>
+        /// <param name="startRad">Start angle in radians</param>
+        /// <param name="startIndex">Index to use as a starting position to add vertices, UVs and normals</param>
+        /// <param name="closed">Boolean specifying if the cylinder has an angled opening (Start and end angles do not describe a single complete circle)</param>
+        /// <param name="delta">Radial step to take between each vertex</param>
+        /// <param name="ringSize">Amount of radial vertices in the ring</param>
+        internal void AddRing(float radius, float y, float slope, float startRad, int startIndex, bool closed, float delta, int ringSize)
+        {
+            double cosa, sina;
+            float angle, t;
+
+            for (int k = 0; k < ringSize; ++k)
+            {
+                //force EndAngle on last vertex to prevent precission errors
+                if (k == ringSize - 1)
+                {
+                    if (closed)
+                    {
+                        angle = StartAngleDeg * MathUtil.Deg2Radf;
+                    }
+                    else
+                    {
+                        angle = EndAngleDeg * MathUtil.Deg2Radf;
+                    }
+                }
+                else
+                {
+                    angle = startRad + k * delta;
+                }
+
+                cosa = Math.Cos(angle);
+                sina = Math.Sin(angle);
+                t = (float)k / GetSliceCount();
+
+                vertices[startIndex + k] = new Vector3d(radius * cosa, y, radius * sina);
+                uv[startIndex + k] = new Vector2f(1 - t, y / (Height == 0 ? 1.0f : Height));
+                Vector3f n = new Vector3f(cosa * Height, slope, sina * Height);
+                n.Normalize();
+                normals[startIndex + k] = n;
+            }
+        }
+
+        /// <summary>
+        /// Adds a cap (top or bottom) to a cylinder. Includes vertices, uvs, normals and triangles
+        /// </summary>
+        /// <param name="radius">Cylinder's radius</param>
+        /// <param name="startRad">Start angle in radians</param>
+        /// <param name="startIndex">Index to use as a starting position to add vertices, UVs and normals</param>
+        /// <param name="closed">Boolean specifying if the cylinder has an angled opening (Start and end angles do not describe a single complete circle)</param>
+        /// <param name="delta">Radial step to take between each vertex</param>
+        /// <param name="triangleIndex">Index to use as a starting position to add triangles</param>
+        /// <param name="capType">Used to specify if this is a top or a bottom cap. Bottom is the default</param>
+        internal void AddCap(float radius, float startRad, int startIndex, bool closed, float delta, ref int triangleIndex, CapType capType = CapType.Bottom)
+        {
+            switch (capType)
+            {
+                case CapType.Top:
+                    vertices[startIndex] = new Vector3d(0, Height, 0);
+                    normals[startIndex] = new Vector3f(0, 1, 0);
+                    break;
+                case CapType.Bottom:
+                    break;
+                default:
+                    vertices[startIndex] = new Vector3d(0, 0, 0);
+                    normals[startIndex] = new Vector3f(0, -1, 0);
+                    break;
+            }
+
+            uv[startIndex] = new Vector2f(0.5f, 0.5f);
+
+            int ringStart = startIndex + 1;
+            double sina, cosa;
+            float angle;
+
+            for (int k = 0; k < Slices; ++k)
+            {
+                angle = startRad + k * delta;
+                cosa = Math.Cos(angle);
+                sina = Math.Sin(angle);
+                vertices[ringStart + k] = new Vector3d(radius * cosa, capType == CapType.Bottom ? 0 : Height, radius * sina);
+                uv[ringStart + k] = new Vector2f(0.5f * (1.0f + cosa), capType == CapType.Bottom ? 0.5 * (1 + sina) : 1.0f - 0.5 * (1 + sina));
+                normals[ringStart + k] = capType == CapType.Bottom ? -Vector3f.AxisY : Vector3f.AxisY;
+            }
+            append_disc(Slices, startIndex, ringStart, closed, capType == CapType.Bottom ? Clockwise : !Clockwise, ref triangleIndex, 2);
+        }
+
+        /// <summary>
+        /// Adds inner faces when a cylinder is not closed
+        /// </summary>
+        /// <param name="vStepSize">Y distance between each ring</param>
+        /// <param name="startIndex">Index to use as a starting position to add vertices, UVs and normals</param>
+        /// <param name="ringSize">Amount of radial vertices in the ring</param>
+        /// <param name="innerFaceUVMode">Used to decide how to calculate inner face UVs</param>
+        /// <param name="triangleIndex">Index to use as a starting position to add triangles</param>
+        internal void AddInnerFaces(float vStepSize, int startIndex, int ringSize, InnerFaceUVMode innerFaceUVMode, ref int triangleIndex)
+        {
+            float ringBottom = 0;
+            float ySpan = Height == 0 ? 1.0f : Height;
+            float yb, yt, xb, xt;
+            
+            // amount to increase/decrease radius by on each ring starting from the base
+            float radiusStep = BaseRadius / (Rings - 1);
+
+            float currentRadius = BaseRadius;
+
+            for (int i = 1; i < Rings; i++)
+            {
+                yb = vStepSize * (i - 1) / ySpan;
+                yt = vStepSize * i / ySpan;
+                xb = innerFaceUVMode == InnerFaceUVMode.Cone ? currentRadius / BaseRadius : 1;
+                xt = innerFaceUVMode == InnerFaceUVMode.Cone ? (currentRadius - radiusStep) / BaseRadius : 1;            
+
+                //rectangle 1
+                vertices[startIndex] = new Vector3d(0, ringBottom, 0); //bottom 
+                vertices[startIndex + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                vertices[startIndex + 2] = vertices[ringSize * i]; //top-a
+                vertices[startIndex + 3] = vertices[ringSize * (i - 1)]; //a
+
+                //rectangle 2
+                vertices[startIndex + 4] = new Vector3d(0, ringBottom + vStepSize, 0); //top
+                vertices[startIndex + 5] = new Vector3d(0, ringBottom, 0); //bottom
+                vertices[startIndex + 6] = vertices[ringSize * i - 1]; //b
+                vertices[startIndex + 7] = vertices[ringSize * (i + 1) - 1]; //top-b
+
+                normals[startIndex] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
+                normals[startIndex + 1] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
+                normals[startIndex + 2] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
+                normals[startIndex + 3] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
+                normals[startIndex + 4] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
+                normals[startIndex + 5] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
+                normals[startIndex + 6] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
+                normals[startIndex + 7] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
+                
+                uv[startIndex] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                uv[startIndex + 1] = new Vector2f(0, yt); //vertex:top uv:top-left
+                uv[startIndex + 2] = new Vector2f(xt, yt); //vertex:top-a uv:top-right
+                uv[startIndex + 3] = new Vector2f(xb, yb); //vertex:a uv:bottom-right
+                uv[startIndex + 4] = new Vector2f(0, yt); //vertex:top uv:top-left
+                uv[startIndex + 5] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
+                uv[startIndex + 6] = new Vector2f(xb, yb); //vertex:b uv:bottom-right
+                uv[startIndex + 7] = new Vector2f(xt, yt); //vertex:top-b uv:top-right
+
+                append_rectangle(startIndex + 0, startIndex + 1, startIndex + 2, startIndex + 3, !Clockwise, ref triangleIndex, 4);
+                append_rectangle(startIndex + 4, startIndex + 5, startIndex + 6, startIndex + 7, !Clockwise, ref triangleIndex, 5);
+
+                ringBottom += vStepSize;
+                startIndex += 8;
+                currentRadius -= radiusStep;
+            }
+        }
+
+        /// <summary>
+        /// Adds cylinder panel triangles (slope triangles)
+        /// </summary>
+        /// <param name="ringSize">Amount of radial vertices in the ring</param>
+        /// <param name="triangleIndex">Index to use as a starting position to add triangles</param>
+        internal void AddCylinderPanels(int ringSize, ref int triangleIndex)
+        {
+            for (int k = 0; k < ringSize - 1; ++k)
+            {
+                for (int i = 0; i < Rings - 1; i++)
+                {
+                    var k1 = k + ringSize * i;
+                    groups[triangleIndex] = 1;
+                    triangles.Set(triangleIndex++, k1, k1 + 1, ringSize + k1, Clockwise);
+                    groups[triangleIndex] = 1;
+                    triangles.Set(triangleIndex++, k1 + 1, ringSize + k1 + 1, ringSize + k1, Clockwise);
+                }
+            }
+        }
+
+        internal enum CapType
+        {
+            Bottom,
+            Top
+        }
+
+        internal enum InnerFaceUVMode
+        {
+            Cylinder,
+            Cone
         }
     }
 
@@ -27,75 +221,49 @@ namespace g3
     /// </summary>
     public class OpenCylinderGenerator : CylindricMeshGenerator
     {
-        public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
-        public float Height = 1.0f;
-        public int Rings = 2;
-        // set to true if you are going to texture this cylinder, otherwise
-        // last panel will not have UVs going from 1 to 0
-        public bool NoSharedVertices = false;
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
-            int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
-            vertices = new VectorArray3d(nRingSize * Rings);
+            bool closed = EndAngleDeg - StartAngleDeg == 360;
+            int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
+            vertices = new VectorArray3d(ringSize * Rings);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
             triangles = new IndexArray3i(2 * Slices * Rings);
+            groups = new int[triangles.Count];
 
-            float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
-            float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = fTotalRange / GetSliceCount();
-
-            float fYSpan = Height;
-            if (fYSpan == 0)
-                fYSpan = 1.0f;
+            float totalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
+            float startRad = StartAngleDeg * MathUtil.Deg2Radf;
 
             // Y distance between each ring
             float vStepSize = Height / (Rings - 1);
             // amount to increase/decrease radius by on each ring starting from the base
             float radiusStep = (BaseRadius - TopRadius) / (Rings - 1);
 
-            // iterates over each ring vertex
-            for (int k = 0; k < nRingSize; ++k)
+            float currentRadius = BaseRadius;
+            float slope = BaseRadius - TopRadius / Height;
+            float delta = (float)totalRange / GetSliceCount();
+
+            for (int i = 0; i < Rings; i++)
             {
-                float angle = fStartRad + (float)k * fDelta;
-                double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)GetSliceCount();
-
-                //handle v tessellation
-                float currentRadius = BaseRadius;
-                // iterates on y axis through each ring
-                for (int i = 0; i < Rings; i++)
-                {
-                    float yt = vStepSize * i / fYSpan;
-                    vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
-
-                    Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
-                    n.Normalize();
-                    normals[nRingSize * i + k] = n;
-                    currentRadius -= radiusStep;
-                }
+                AddRing(i == Rings - 1 ? TopRadius : currentRadius, i == Rings - 1 ? Height : vStepSize * i, slope, startRad, i * ringSize, closed, delta, ringSize);
+                currentRadius -= radiusStep;
             }
 
+            // generate cylinder panels
             int ti = 0;
-            for (int k = 0; k < nRingSize - 1; ++k)
-            {
-                for (int i = 0; i < Rings; i++)
-                {
-                    var k1 = k + nRingSize * i;
+            AddCylinderPanels(ringSize, ref ti);
 
-                    triangles.Set(ti++, k1, k1 + 1, nRingSize + k1, Clockwise);
-                    triangles.Set(ti++, k1 + 1, nRingSize + k1 + 1, nRingSize + k1, Clockwise);
-                }
+            // close disc if we went all the way
+            if (closed && NoSharedVertices == false)
+            {
+                groups[ti] = 1;
+                triangles.Set(ti++, ringSize - 1, 0, ringSize, Clockwise);
+                groups[ti] = 1;
+                triangles.Set(ti++, ringSize - 1, ringSize, 2 * ringSize - 1, Clockwise);
             }
-            if (bClosed && NoSharedVertices == false)
-            {   // close disc if we went all the way
-                triangles.Set(ti++, nRingSize - 1, 0, nRingSize, Clockwise);
-                triangles.Set(ti++, nRingSize - 1, nRingSize, 2 * nRingSize - 1, Clockwise);
-            }
+
             return this;
         }
     }
@@ -114,178 +282,78 @@ namespace g3
     /// </summary>
     public class CappedCylinderGenerator : CylindricMeshGenerator
     {
-        public float BaseRadius = 1.0f;
         public float TopRadius = 1.0f;
-        public float Height = 1.0f;
-        public int Rings = 2;
-
-        // set to true if you are going to texture this cylinder or want sharp edges
-        public bool NoSharedVertices = false;
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
-            int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
-            int nCapVertices = (NoSharedVertices) ? Slices + 1 : 1;
-            int nFaceVertices = (NoSharedVertices && bClosed == false) ? 8 * (Rings - 1) : 0;
-            vertices = new VectorArray3d(nRingSize * Rings + 2 * nCapVertices + nFaceVertices);
+            bool closed = EndAngleDeg - StartAngleDeg == 360;
+            int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
+            int capVertices = (NoSharedVertices) ? Slices + 1 : 1;
+            int faceVertices = (NoSharedVertices && closed == false) ? 8 * (Rings - 1) : 0;
+            vertices = new VectorArray3d(ringSize * Rings + 2 * capVertices + faceVertices);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
 
-            int nCylTris = 2 * Slices * (Rings - 1);
-            int nCapTris = 2 * Slices;
-            int nFaceTris = (bClosed == false) ? 2 * 2 * (Rings - 1) : 0;
-            triangles = new IndexArray3i(nCylTris + nCapTris + nFaceTris);
+            int cylTris = 2 * Slices * (Rings - 1);
+            int capTris = 2 * Slices;
+            int faceTris = (closed == false) ? 2 * 2 * (Rings - 1) : 0;
+            triangles = new IndexArray3i(cylTris + capTris + faceTris);
             groups = new int[triangles.Count];
 
-            float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
-            float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = fTotalRange / GetSliceCount();
-
-            float fYSpan = Height;
-            if (fYSpan == 0)
-                fYSpan = 1.0f;
+            float totalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
+            float startRad = StartAngleDeg * MathUtil.Deg2Radf;
 
             // Y distance between each ring
             float vStepSize = Height / (Rings - 1);
             // amount to increase/decrease radius by on each ring starting from the base
             float radiusStep = (BaseRadius - TopRadius) / (Rings - 1);
 
-            // iterates over each ring vertex
-            for (int k = 0; k < nRingSize; ++k)
-            {
-                float angle = fStartRad + (float)k * fDelta;
-                double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)GetSliceCount();
+            float currentRadius = BaseRadius;
+            float slope = BaseRadius - TopRadius / Height;
+            float delta = (float)totalRange / GetSliceCount();
 
-                // iterates on y axis through each ring
-                float currentRadius = BaseRadius;
-                for (int i = 0; i < Rings; i++)
-                {
-                    float yt = vStepSize * i / fYSpan;
-                    vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
-                    Vector3f n = new Vector3f(cosa * Height, (BaseRadius - TopRadius) / Height, sina * Height);
-                    n.Normalize();
-                    normals[nRingSize * i + k] = n;
-                    currentRadius -= radiusStep;
-                }
+            for (int i = 0; i < Rings; i++)
+            {
+                AddRing(i == Rings - 1 ? TopRadius : currentRadius, i == Rings - 1 ? Height : vStepSize * i, slope, startRad, i * ringSize, closed, delta, ringSize);
+                currentRadius -= radiusStep;
             }
 
-            // generate cylinder panels
             int ti = 0;
-            for (int k = 0; k < nRingSize - 1; ++k)
+
+            AddCylinderPanels(ringSize, ref ti);
+
+            // close disc if we went all the way
+            if (closed && NoSharedVertices == false)
             {
-                for (int i = 0; i < Rings - 1; i++)
-                {
-                    var k1 = k + nRingSize * i;
-                    groups[ti] = 1;
-                    triangles.Set(ti++, k1, k1 + 1, nRingSize + k1, Clockwise);
-                    groups[ti] = 1;
-                    triangles.Set(ti++, k1 + 1, nRingSize + k1 + 1, nRingSize + k1, Clockwise);
-                }
-            }
-            if (bClosed && NoSharedVertices == false)
-            {      // close disc if we went all the way
                 groups[ti] = 1;
-                triangles.Set(ti++, nRingSize - 1, 0, nRingSize, Clockwise);
+                triangles.Set(ti++, ringSize - 1, 0, ringSize, Clockwise);
                 groups[ti] = 1;
-                triangles.Set(ti++, nRingSize - 1, nRingSize, 2 * nRingSize - 1, Clockwise);
+                triangles.Set(ti++, ringSize - 1, ringSize, 2 * ringSize - 1, Clockwise);
             }
 
-            int nBottomC = nRingSize * Rings;
-            vertices[nBottomC] = new Vector3d(0, 0, 0);
-            uv[nBottomC] = new Vector2f(0.5f, 0.5f);
-            normals[nBottomC] = new Vector3f(0, -1, 0);
-
-            int nTopC = nRingSize * Rings + 1;
-            vertices[nTopC] = new Vector3d(0, Height, 0);
-            uv[nTopC] = new Vector2f(0.5f, 0.5f);
-            normals[nTopC] = new Vector3f(0, 1, 0);
+            int bottomCap = ringSize * Rings;
+            int topCap = ringSize * Rings + 1;
+            //the fact that the bottom and top cap's center vertices is no longer added at this point is braking shared vertices caps
 
             if (NoSharedVertices)
             {
-                //bottom disc
-                int nStartB = nRingSize * Rings + 2;
-                for (int k = 0; k < Slices; ++k)
+                AddCap(BaseRadius, startRad, ringSize * Rings, closed, delta, ref ti);
+                AddCap(TopRadius, startRad, ringSize * Rings + 1 + Slices, closed, delta, ref ti, CapType.Top);
+                
+                int startF = ringSize * Rings + 2 + 2 * Slices;
+                if (closed == false)
                 {
-                    float a = fStartRad + (float)k * fDelta;
-                    double cosa = Math.Cos(a), sina = Math.Sin(a);
-                    vertices[nStartB + k] = new Vector3d(BaseRadius * cosa, 0, BaseRadius * sina);
-                    uv[nStartB + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1 + sina));
-                    normals[nStartB + k] = -Vector3f.AxisY;
+                    AddInnerFaces(vStepSize, startF, ringSize, InnerFaceUVMode.Cylinder, ref ti);
                 }
-                append_disc(Slices, nBottomC, nStartB, bClosed, Clockwise, ref ti, 2);
-
-                //top disc
-                int nStartT = nRingSize * Rings + 2 + Slices;
-                for (int k = 0; k < Slices; ++k)
-                {
-                    float a = fStartRad + (float)k * fDelta;
-                    double cosa = Math.Cos(a), sina = Math.Sin(a);
-                    vertices[nStartT + k] = new Vector3d(TopRadius * cosa, Height, TopRadius * sina);
-                    uv[nStartT + k] = new Vector2f(0.5f * (1.0f + cosa), 1 - 0.5f * (1 + sina));
-                    normals[nStartT + k] = Vector3f.AxisY;
-                }
-                append_disc(Slices, nTopC, nStartT, bClosed, !Clockwise, ref ti, 3);
-
-                float ringBottom = 0;
-                if (bClosed == false)
-                {
-                    int nStartF = nRingSize * Rings + 2 + 2 * Slices;
-
-                    for (int i = 1; i < Rings; i++)
-                    {
-                        float yb = vStepSize * (i - 1) / fYSpan;
-                        float yt = vStepSize * i / fYSpan;
-
-                        //rectangle 1
-                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //bottom 
-                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //top
-                        vertices[nStartF + 2] = vertices[nRingSize * i]; //top-a
-                        vertices[nStartF + 3] = vertices[nRingSize * (i - 1)]; //a
-
-                        //rectangle 2
-                        vertices[nStartF + 4] = new Vector3d(0, ringBottom + vStepSize, 0); //top
-                        vertices[nStartF + 5] = new Vector3d(0, ringBottom, 0); //bottom
-                        vertices[nStartF + 6] = vertices[nRingSize * i - 1]; //b
-                        vertices[nStartF + 7] = vertices[nRingSize * (i + 1) - 1]; //top-b
-
-                        normals[nStartF] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 3] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 4] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 5] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 6] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-                        normals[nStartF + 7] = estimate_normal(nStartF + 4, nStartF + 5, nStartF + 6);
-
-                        uv[nStartF] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
-                        uv[nStartF + 1] = new Vector2f(0, yt); //vertex:top uv:bottom-right
-                        uv[nStartF + 2] = new Vector2f(1, yt); //vertex:top-a uv:top-right
-                        uv[nStartF + 3] = new Vector2f(1, yb); //vertex:a uv:bottom-right
-                        uv[nStartF + 4] = new Vector2f(0, yt); //vertex:top uv:top-left
-                        uv[nStartF + 5] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
-                        uv[nStartF + 6] = new Vector2f(1, yb); //vertex:b uv:bottom-right
-                        uv[nStartF + 7] = new Vector2f(1, yt); //vertex:top-b uv:top-right 
-
-                        append_rectangle(nStartF + 0, nStartF + 1, nStartF + 2, nStartF + 3, !Clockwise, ref ti, 4);
-                        append_rectangle(nStartF + 4, nStartF + 5, nStartF + 6, nStartF + 7, !Clockwise, ref ti, 5);
-
-                        ringBottom += vStepSize;
-                        nStartF += 8;
-                    }
-                }
-
             }
             else
             {
-                append_disc(Slices, nBottomC, 0, bClosed, Clockwise, ref ti, 2);
-                append_disc(Slices, nTopC, nRingSize, bClosed, !Clockwise, ref ti, 3);
-                if (bClosed == false)
+                append_disc(Slices, bottomCap, 0, closed, Clockwise, ref ti, 2);
+                append_disc(Slices, topCap, ringSize, closed, !Clockwise, ref ti, 3);
+                if (closed == false)
                 {
-                    append_rectangle(nBottomC, 0, nRingSize, nTopC, Clockwise, ref ti, 4);
-                    append_rectangle(nRingSize - 1, nBottomC, nTopC, 2 * nRingSize - 1, Clockwise, ref ti, 5);
+                    append_rectangle(bottomCap, 0, ringSize, topCap, Clockwise, ref ti, 4);
+                    append_rectangle(ringSize - 1, bottomCap, topCap, 2 * ringSize - 1, Clockwise, ref ti, 5);
                 }
             }
             return this;
@@ -303,36 +371,32 @@ namespace g3
     // a cylinder-like projection
     public class ConeGenerator : CylindricMeshGenerator
     {
-        public float BaseRadius = 1.0f;
-        public float Height = 1.0f;
-        public int Rings = 2;
         public LateralSlopeUVModes LateralSlopeUVMode = LateralSlopeUVModes.TopProjected;
-        // set to true if you are going to texture this cone or want sharp edges
-        public bool NoSharedVertices = false;
 
         override public MeshGenerator Generate()
         {
-            bool bClosed = EndAngleDeg - StartAngleDeg == 360;
-            int nRingSize = (NoSharedVertices && bClosed) ? Slices + 1 : Slices;
-            int nTipVertices = (NoSharedVertices) ? nRingSize : 1;
-            int nCapVertices = (NoSharedVertices) ? Slices + 1 : 1;
-            int nFaceVertices = (NoSharedVertices && bClosed == false) ? 12 * (Rings - 1) : 0; //these are the "inner faces" resulting from opening the cone up using angles
-            vertices = new VectorArray3d(nRingSize * (Rings - 1) + nTipVertices + nCapVertices + nFaceVertices);
+            bool closed = EndAngleDeg - StartAngleDeg == 360;
+            int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
+            int tipVertices = (NoSharedVertices) ? ringSize : 1;
+            int capVertices = (NoSharedVertices) ? Slices + 1 : 1;
+            int faceVertices = (NoSharedVertices && closed == false) ? 8 * (Rings - 1) : 0; //these are the "inner faces" resulting from opening the cone up using angles
+            vertices = new VectorArray3d(ringSize * (Rings - 1) + tipVertices + capVertices + faceVertices);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
 
-            int nConeTris = (NoSharedVertices) ? 2 * Slices * (Rings - 1) : Slices;
-            int nCapTris = Slices;
-            int nFaceTris = (bClosed == false) ? 2 * 2 * (Rings - 1) : 0; //2 faces, 2 triangles per face per (Rings - 1)
-            triangles = new IndexArray3i(nConeTris + nCapTris + nFaceTris);
+            int coneTris = (NoSharedVertices) ? 2 * Slices * (Rings - 1) : Slices;
+            int capTris = Slices;
+            int faceTris = (closed == false) ? 2 * 2 * (Rings - 1) : 0; //2 faces, 2 triangles per face per (Rings - 1)
+            triangles = new IndexArray3i(coneTris + capTris + faceTris);
+            groups = new int[triangles.Count];
 
-            float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
-            float fStartRad = StartAngleDeg * MathUtil.Deg2Radf;
-            float fDelta = fTotalRange / GetSliceCount();
+            float totalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
+            float startRad = StartAngleDeg * MathUtil.Deg2Radf;
+            float delta = totalRange / GetSliceCount();
 
-            float fYSpan = Height;
-            if (fYSpan == 0)
-                fYSpan = 1.0f;
+            float ySpan = Height;
+            if (ySpan == 0)
+                ySpan = 1.0f;
 
             // Y distance between each ring
             float vStepSize = Height / (Rings - 1);
@@ -340,9 +404,9 @@ namespace g3
             float radiusStep = BaseRadius / (Rings - 1);
 
             // generate rings
-            for (int k = 0; k < nRingSize; ++k)
+            for (int k = 0; k < ringSize; ++k)
             {
-                float angle = fStartRad + (float)k * fDelta;
+                float angle = startRad + (float)k * delta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 float t = (float)k / (float)GetSliceCount();
                 float topUVStep = t - 1.0f / (GetSliceCount() * 2.0f);
@@ -351,151 +415,66 @@ namespace g3
                 for (int i = 0; i < Rings; i++)
                 {
 
-                    float yt = vStepSize * i / fYSpan;
-                    vertices[nRingSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
+                    float yt = vStepSize * i / ySpan;
+                    vertices[ringSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     // UV
                     switch (LateralSlopeUVMode)
                     {
                         case LateralSlopeUVModes.SideProjected:
                             if (i == (Rings - 1))
                             {
-                                uv[nRingSize * i + k - 1] = new Vector2f(1.0f - topUVStep, yt);
+                                uv[ringSize * i + k - 1] = new Vector2f(1.0f - topUVStep, yt);
                             }
                             else
                             {
-                                uv[nRingSize * i + k] = new Vector2f(1 - t, yt);
+                                uv[ringSize * i + k] = new Vector2f(1 - t, yt);
                             }
                             break;
                         case LateralSlopeUVModes.TopProjected:
                         default:
-                            uv[nRingSize * i + k] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1 - 0.5 * (1 + (currentRadius / BaseRadius) * sina));
+                            uv[ringSize * i + k] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1 - 0.5 * (1 + (currentRadius / BaseRadius) * sina));
                             break;
                     }
                     Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
                     n.Normalize();
-                    normals[nRingSize * i + k] = n;
+                    normals[ringSize * i + k] = n;
                     currentRadius -= radiusStep;
                 }
             }
             if (NoSharedVertices == false)
             {
-                vertices[nRingSize] = new Vector3d(0, Height, 0);
-                normals[nRingSize] = Vector3f.AxisY;//TODO: verify normal calculation
-                uv[nRingSize] = new Vector2f(0.5f, 0.5f);//TODO: verify uv calculation
+                vertices[ringSize] = new Vector3d(0, Height, 0);
+                normals[ringSize] = Vector3f.AxisY;//TODO: verify normal calculation
+                uv[ringSize] = new Vector2f(0.5f, 0.5f);//TODO: verify uv calculation
             }
 
-            // generate cylinder panels
             int ti = 0;
             if (NoSharedVertices)
             {
-                for (int k = 0; k < nRingSize - 1; ++k)
-                {
-                    for (int i = 0; i < Rings - 1; i++)
-                    {
-                        var k1 = k + nRingSize * i;
-                        triangles.Set(ti++, k1, k1 + 1, nRingSize + k1, Clockwise);
-                        triangles.Set(ti++, k1 + 1, nRingSize + k1 + 1, nRingSize + k1, Clockwise);
-                    }
-                }
+                AddCylinderPanels(ringSize, ref ti);
 
             }
             else
-                append_disc(Slices, nRingSize, 0, bClosed, !Clockwise, ref ti);
+                append_disc(Slices, ringSize, 0, closed, !Clockwise, ref ti);
 
-            int nBottomC = nRingSize * Rings;
-            vertices[nBottomC] = new Vector3d(0, 0, 0);
-            uv[nBottomC] = new Vector2f(0.5f, 0.5f);
-            normals[nBottomC] = new Vector3f(0, -1, 0);
+            int nBottomC = ringSize * Rings;
 
             if (NoSharedVertices)
             {
-                int nStartB = nBottomC + 1;
-                for (int k = 0; k < Slices; ++k)
+                AddCap(BaseRadius, startRad, ringSize * Rings, closed, delta, ref ti);
+
+                if (closed == false)
                 {
-                    float a = fStartRad + (float)k * fDelta;
-                    double cosa = Math.Cos(a), sina = Math.Sin(a);
-                    vertices[nStartB + k] = new Vector3d(BaseRadius * cosa, 0, BaseRadius * sina);
-                    uv[nStartB + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1 + sina));
-                    normals[nStartB + k] = -Vector3f.AxisY;
+                    AddInnerFaces(vStepSize, nBottomC + 1 + Slices, ringSize, InnerFaceUVMode.Cone, ref ti);
                 }
-                append_disc(Slices, nBottomC, nStartB, bClosed, Clockwise, ref ti);
-
-                // ugh this is very ugly but hard to see the pattern...
-                float ringBottom = 0;
-                if (bClosed == false)
-                {
-                    int nStartF = nStartB + Slices;
-                    float currentRadius = BaseRadius;
-
-                    for (int i = 1; i < Rings; i++)
-                    {
-                        float yb = vStepSize * (i - 1) / fYSpan;
-                        float yt = vStepSize * i / fYSpan;
-                        float xa = currentRadius / BaseRadius;
-                        float xa1 = (currentRadius - radiusStep) / BaseRadius;
-
-                        //face 1 - triangle 1
-                        vertices[nStartF] = new Vector3d(0, ringBottom, 0); //bottom 
-                        vertices[nStartF + 1] = new Vector3d(0, ringBottom + vStepSize, 0); //top
-                        vertices[nStartF + 2] = vertices[nRingSize * (i - 1)]; //a
-                        //face 1 - triangle 2
-                        vertices[nStartF + 3] = vertices[nRingSize * (i - 1)]; //a
-                        vertices[nStartF + 4] = new Vector3d(0, ringBottom + vStepSize, 0); //top
-                        vertices[nStartF + 5] = vertices[nRingSize * i]; //top-a
-                        //face 2 -triangle 1
-                        vertices[nStartF + 6] = new Vector3d(0, ringBottom + vStepSize, 0); //top
-                        vertices[nStartF + 7] = new Vector3d(0, ringBottom, 0); //bottom
-                        vertices[nStartF + 8] = vertices[nRingSize * (i + 1) - 1]; //top-b
-                        //face 2 -triangle 2
-                        vertices[nStartF + 9] = new Vector3d(0, ringBottom, 0); //bottom
-                        vertices[nStartF + 10] = vertices[nRingSize * i - 1]; //b
-                        vertices[nStartF + 11] = vertices[nRingSize * (i + 1) - 1]; //top-b
-
-                        normals[nStartF] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 1] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 2] = estimate_normal(nStartF, nStartF + 1, nStartF + 2);
-                        normals[nStartF + 3] = estimate_normal(nStartF + 3, nStartF + 4, nStartF + 5);
-                        normals[nStartF + 4] = estimate_normal(nStartF + 3, nStartF + 4, nStartF + 5);
-                        normals[nStartF + 5] = estimate_normal(nStartF + 3, nStartF + 4, nStartF + 5);
-                        normals[nStartF + 6] = estimate_normal(nStartF + 6, nStartF + 7, nStartF + 8);
-                        normals[nStartF + 7] = estimate_normal(nStartF + 6, nStartF + 7, nStartF + 8);
-                        normals[nStartF + 8] = estimate_normal(nStartF + 6, nStartF + 7, nStartF + 8);
-                        normals[nStartF + 9] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
-                        normals[nStartF + 10] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
-                        normals[nStartF + 11] = estimate_normal(nStartF + 9, nStartF + 10, nStartF + 11);
-
-                        uv[nStartF] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
-                        uv[nStartF + 1] = new Vector2f(0, yt); //vertex:top uv:top-left
-                        uv[nStartF + 2] = new Vector2f(xa, yb); //vertex:a uv:bottom-right
-                        uv[nStartF + 3] = new Vector2f(xa, yb); //vertex:a uv:bottom-right
-                        uv[nStartF + 4] = new Vector2f(0, yt); //vertex:top uv:top-left
-                        uv[nStartF + 5] = new Vector2f(xa1, yt); //vertex:top-a uv:top-right
-                        uv[nStartF + 6] = new Vector2f(0, yt); //vertex:top uv:top-left
-                        uv[nStartF + 7] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
-                        uv[nStartF + 8] = new Vector2f(xa1, yt); //vertex:top-b uv:top-right*
-                        uv[nStartF + 9] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
-                        uv[nStartF + 10] = new Vector2f(xa, yb); //vertex:b uv:bottom-right
-                        uv[nStartF + 11] = new Vector2f(xa1, yt); //vertex:top-b uv:top-right
-
-                        triangles.Set(ti++, nStartF + 0, nStartF + 1, nStartF + 2, !Clockwise); //open face
-                        triangles.Set(ti++, nStartF + 3, nStartF + 4, nStartF + 5, !Clockwise); //open face
-                        triangles.Set(ti++, nStartF + 6, nStartF + 7, nStartF + 8, !Clockwise); //open face
-                        triangles.Set(ti++, nStartF + 9, nStartF + 10, nStartF + 11, !Clockwise); //open face
-
-                        ringBottom += vStepSize;
-                        nStartF += 12;
-                        currentRadius -= radiusStep;
-                    }
-                }
-
             }
             else
             {
-                append_disc(Slices, nBottomC, 0, bClosed, Clockwise, ref ti);
-                if (bClosed == false)
+                append_disc(Slices, nBottomC, 0, closed, Clockwise, ref ti);
+                if (closed == false)
                 {
-                    triangles.Set(ti++, nBottomC, nRingSize, 0, !Clockwise);
-                    triangles.Set(ti++, nBottomC, nRingSize, nRingSize - 1, Clockwise);
+                    triangles.Set(ti++, nBottomC, ringSize, 0, !Clockwise);
+                    triangles.Set(ti++, nBottomC, ringSize, ringSize - 1, Clockwise);
                 }
             }
 
