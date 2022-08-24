@@ -8,7 +8,7 @@ namespace g3
         public float Radius = 1.0f;
         public float StartAngleDeg = 0.0f;
         public float EndAngleDeg = 360.0f;
-        public int Slices = 32; 
+        public int Slices = 32;
         public bool AddSliceWhenOpen = false;
 
         private int GetSliceCount()

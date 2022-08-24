@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace g3
 {
@@ -32,8 +28,8 @@ namespace g3
         virtual protected Vector3d make_vertex(float x, float y)
         {
             Vector3d v = Vector3d.Zero;
-            v[Math.Abs(IndicesMap.a)-1] = (IndicesMap.a < 0) ? -x : x;
-            v[Math.Abs(IndicesMap.b)-1] = (IndicesMap.b < 0) ? -y : y;
+            v[Math.Abs(IndicesMap.a) - 1] = (IndicesMap.a < 0) ? -x : x;
+            v[Math.Abs(IndicesMap.b) - 1] = (IndicesMap.b < 0) ? -y : y;
             return v;
         }
 
@@ -57,19 +53,29 @@ namespace g3
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
             // if we want the UV subregion, we assume it is 
-            if (UVMode != UVModes.FullUVSquare) {
-                if (Width > Height) {
+            if (UVMode != UVModes.FullUVSquare)
+            {
+                if (Width > Height)
+                {
                     float a = Height / Width;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvbottom = 0.5f - a / 2.0f; uvtop = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvtop = a;
                     }
-                } else if (Height > Width) {
+                }
+                else if (Height > Width)
+                {
                     float a = Width / Height;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvleft = 0.5f - a / 2.0f; uvright = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvright = a;
                     }
                 }
@@ -80,10 +86,13 @@ namespace g3
             uv[2] = new Vector2f(uvright, uvtop);
             uv[3] = new Vector2f(uvleft, uvtop);
 
-            if (Clockwise == true) {
+            if (Clockwise == true)
+            {
                 triangles.Set(0, 0, 1, 2);
                 triangles.Set(1, 0, 2, 3);
-            } else {
+            }
+            else
+            {
                 triangles.Set(0, 0, 2, 1);
                 triangles.Set(1, 0, 3, 2);
             }
@@ -128,19 +137,29 @@ namespace g3
             // corner UVs
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
-            if (UVMode != UVModes.FullUVSquare) {
-                if (Width > Height) {
+            if (UVMode != UVModes.FullUVSquare)
+            {
+                if (Width > Height)
+                {
                     float a = Height / Width;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvbottom = 0.5f - a / 2.0f; uvtop = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvtop = a;
                     }
-                } else if (Height > Width) {
+                }
+                else if (Height > Width)
+                {
                     float a = Width / Height;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvleft = 0.5f - a / 2.0f; uvright = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvright = a;
                     }
                 }
@@ -156,9 +175,11 @@ namespace g3
 
             // add vertex rows
             int start_vi = vi;
-            for (int yi = 0; yi < N; ++yi) {
+            for (int yi = 0; yi < N; ++yi)
+            {
                 double ty = (double)yi / (double)(N - 1);
-                for (int xi = 0; xi < N; ++xi) {
+                for (int xi = 0; xi < N; ++xi)
+                {
                     double tx = (double)xi / (double)(N - 1);
                     normals[vi] = Normal;
                     uv[vi] = bilerp(ref uv00, ref uv01, ref uv11, ref uv10, (float)tx, (float)ty);
@@ -167,8 +188,10 @@ namespace g3
             }
 
             // add faces
-            for (int y0 = 0; y0 < NT; ++y0) {
-                for (int x0 = 0; x0 < NT; ++x0) {
+            for (int y0 = 0; y0 < NT; ++y0)
+            {
+                for (int x0 = 0; x0 < NT; ++x0)
+                {
                     int i00 = start_vi + y0 * N + x0;
                     int i10 = start_vi + (y0 + 1) * N + x0;
                     int i01 = i00 + 1, i11 = i10 + 1;
@@ -225,16 +248,20 @@ namespace g3
         public UVModes UVMode = UVModes.FullUVSquare;
 
         // order is [inner_corner, outer_1, outer_2]
-        static int[] corner_spans = new int[] { 0, 11, 4,   1, 5, 6,   2, 7, 8,   3, 9, 10 };
+        static int[] corner_spans = new int[] { 0, 11, 4, 1, 5, 6, 2, 7, 8, 3, 9, 10 };
 
         override public MeshGenerator Generate()
         {
             int corner_v = 0, corner_t = 0;
-            for (int k = 0; k < 4; ++k) {
-                if (((int)SharpCorners & (1 << k)) != 0) {
+            for (int k = 0; k < 4; ++k)
+            {
+                if (((int)SharpCorners & (1 << k)) != 0)
+                {
                     corner_v += 1;
                     corner_t += 2;
-                } else {
+                }
+                else
+                {
                     corner_v += CornerSteps;
                     corner_t += (CornerSteps + 1);
                 }
@@ -270,18 +297,22 @@ namespace g3
             bool cycle = (Clockwise == false);
             int ti = 0;
             append_rectangle(0, 1, 2, 3, cycle, ref ti);
-            append_rectangle(4,5,1,0, cycle, ref ti);
-            append_rectangle(1,6,7,2, cycle, ref ti);
-            append_rectangle(3,2,8,9, cycle, ref ti);
-            append_rectangle(11,0,3,10, cycle, ref ti);
+            append_rectangle(4, 5, 1, 0, cycle, ref ti);
+            append_rectangle(1, 6, 7, 2, cycle, ref ti);
+            append_rectangle(3, 2, 8, 9, cycle, ref ti);
+            append_rectangle(11, 0, 3, 10, cycle, ref ti);
 
             int vi = 12;
-            for ( int j = 0; j < 4; ++j ) {
+            for (int j = 0; j < 4; ++j)
+            {
                 bool sharp = ((int)SharpCorners & (1 << j)) > 0;
-                if (sharp) {
+                if (sharp)
+                {
                     append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], 1,
                         cycle, ref vi, ref ti, -1, MathUtil.SqrtTwo * Radius);
-                } else {
+                }
+                else
+                {
                     append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], CornerSteps,
                         cycle, ref vi, ref ti);
                 }
@@ -294,30 +325,41 @@ namespace g3
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
             // if we want the UV subregion, we assume it is 
-            if (UVMode != UVModes.FullUVSquare) {
-                if (Width > Height) {
+            if (UVMode != UVModes.FullUVSquare)
+            {
+                if (Width > Height)
+                {
                     float a = Height / Width;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvbottom = 0.5f - a / 2.0f; uvtop = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvtop = a;
                     }
-                } else if (Height > Width) {
+                }
+                else if (Height > Width)
+                {
                     float a = Width / Height;
-                    if (UVMode == UVModes.CenteredUVRectangle) {
+                    if (UVMode == UVModes.CenteredUVRectangle)
+                    {
                         uvleft = 0.5f - a / 2.0f; uvright = 0.5f + a / 2.0f;
-                    } else {
+                    }
+                    else
+                    {
                         uvright = a;
                     }
                 }
             }
 
             Vector3d c = new Vector3d(-Width / 2, 0, -Height / 2);
-            for ( int k = 0; k < vertices.Count; ++k ) {
+            for (int k = 0; k < vertices.Count; ++k)
+            {
                 Vector3d v = vertices[k];
                 double tx = (v.x - c.x) / Width;
                 double ty = (v.y - c.y) / Height;
-                uv[k] = new Vector2f( (1 - tx) * uvleft + (tx) * uvright, 
+                uv[k] = new Vector2f((1 - tx) * uvleft + (tx) * uvright,
                                       (1 - ty) * uvbottom + (ty) * uvtop);
             }
 
@@ -338,10 +380,11 @@ namespace g3
         public Vector3d[] GetBorderLoop()
         {
             int corner_v = 0;
-            for (int k = 0; k < 4; ++k) {
+            for (int k = 0; k < 4; ++k)
+            {
                 if (((int)SharpCorners & (1 << k)) != 0)
                     corner_v += 1;
-                else 
+                else
                     corner_v += CornerSteps;
             }
 
@@ -351,15 +394,17 @@ namespace g3
             Vector3d[] vertices = new Vector3d[4 + corner_v];
             int vi = 0;
 
-            for ( int i = 0; i < 4; ++i ) { 
+            for (int i = 0; i < 4; ++i)
+            {
                 vertices[vi++] = new Vector3d(signx[i] * Width / 2, 0, signy[i] * Height / 2);
 
                 bool sharp = ((int)SharpCorners & (1 << i)) > 0;
-                Arc2d arc = new Arc2d( new Vector2d(signx[i] * innerW, signy[i] * innerH), 
+                Arc2d arc = new Arc2d(new Vector2d(signx[i] * innerW, signy[i] * innerH),
                     (sharp) ? MathUtil.SqrtTwo * Radius : Radius,
                     startangle[i], endangle[i]);
                 int use_steps = (sharp) ? 1 : CornerSteps;
-                for (int k = 0; k < use_steps; ++k) {
+                for (int k = 0; k < use_steps; ++k)
+                {
                     double t = (double)(i + 1) / (double)(use_steps + 1);
                     Vector2d pos = arc.SampleT(t);
                     vertices[vi++] = new Vector3d(pos.x, 0, pos.y);
