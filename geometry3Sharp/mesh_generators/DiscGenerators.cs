@@ -104,7 +104,8 @@ namespace g3
                 triangles.Set(ti++, k, Slices + k + 1, Slices + k, Clockwise);
             }
             if (bFullDisc)
-            {      // close disc if we went all the way
+            {      
+                // close disc if we went all the way
                 triangles.Set(ti++, Slices - 1, 0, Slices, Clockwise);
                 triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, Clockwise);
             }
