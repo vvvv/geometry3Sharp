@@ -92,8 +92,8 @@ namespace g3
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
                 vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
-                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), 0.5f * (1.0f + fUVRatio * sina));
-                uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1.0f + sina));
+                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), 0.5f * (1.0f - fUVRatio * sina));//1.0f - 0.5 * (1 + sina)
+                uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1.0f - sina));
                 normals[k] = normals[Slices + k] = Vector3f.AxisY;
             }
 
