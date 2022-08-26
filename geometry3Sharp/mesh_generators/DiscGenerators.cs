@@ -58,7 +58,7 @@ namespace g3
 
 
     // generate a triangle fan, no subdvisions
-    public class PuncturedDiscGenerator : MeshGenerator
+    public class PuncturedDiscGenerator : FlatMeshGenerator
     {
         public float OuterRadius = 1.0f;
         public float InnerRadius = 0.5f;
@@ -92,8 +92,22 @@ namespace g3
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
                 vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
-                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), 0.5f * (1.0f - fUVRatio * sina));//1.0f - 0.5 * (1 + sina)
-                uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), 0.5f * (1.0f - sina));
+
+                double uvY1, uvY2;
+                switch (TextureSpace)
+                {
+                    case TextureSpace.DirectX:
+                        uvY1 = 0.5f * (1.0f - fUVRatio * sina);
+                        uvY2 = 0.5f * (1.0f - sina); 
+                        break;
+                    case TextureSpace.OpenGL:
+                    default:
+                        uvY1 = 0.5f * (1.0f + fUVRatio * sina);
+                        uvY2 = 0.5f * (1.0f + sina);
+                        break;
+                }
+                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), uvY1);//1.0f - 0.5 * (1 + sina)
+                uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), uvY2);
                 normals[k] = normals[Slices + k] = Vector3f.AxisY;
             }
 
