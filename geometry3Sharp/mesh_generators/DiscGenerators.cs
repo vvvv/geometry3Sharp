@@ -108,7 +108,14 @@ namespace g3
                 }
                 uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), uvY1);//1.0f - 0.5 * (1 + sina)
                 uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), uvY2);
-                normals[k] = normals[Slices + k] = Vector3f.AxisY;
+
+                switch (Normal)
+                {
+                    default:
+                    case NormalDirection.UpZ: normals[k] = normals[Slices + k] = Vector3f.AxisZ; break;
+                    case NormalDirection.UpY: normals[k] = normals[Slices + k] = Vector3f.AxisY; break;
+                    case NormalDirection.UpX: normals[k] = normals[Slices + k] = Vector3f.AxisX; break;
+                }
             }
 
             int ti = 0;
