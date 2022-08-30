@@ -11,4 +11,11 @@
         DirectX,
         OpenGL
     }
+
+    public enum NormalDirection
+    {
+        UpZ,
+        UpY,
+        UpX
+    }
 }
