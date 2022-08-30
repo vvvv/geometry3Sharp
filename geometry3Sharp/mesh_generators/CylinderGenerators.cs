@@ -371,7 +371,7 @@ namespace g3
     // a cylinder-like projection
     public class ConeGenerator : CylindricMeshGenerator
     {
-        public LateralSlopeUVModes LateralSlopeUVMode = LateralSlopeUVModes.TopProjected;
+        public SlopeUVMode SlopeUVMode = SlopeUVMode.OnShape;
 
         override public MeshGenerator Generate()
         {
@@ -418,9 +418,9 @@ namespace g3
                     float yt = vStepSize * i / ySpan;
                     vertices[ringSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
                     // UV
-                    switch (LateralSlopeUVMode)
+                    switch (SlopeUVMode)
                     {
-                        case LateralSlopeUVModes.SideProjected:
+                        case SlopeUVMode.SideProjected:
                             if (i == (Rings - 1))
                             {
                                 uv[ringSize * i + k - 1] = new Vector2f(1.0f - topUVStep, yt);
@@ -430,7 +430,7 @@ namespace g3
                                 uv[ringSize * i + k] = new Vector2f(1 - t, yt);
                             }
                             break;
-                        case LateralSlopeUVModes.TopProjected:
+                        case SlopeUVMode.OnShape:
                         default:
                             uv[ringSize * i + k] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1 - 0.5 * (1 + (currentRadius / BaseRadius) * sina));
                             break;
@@ -480,15 +480,13 @@ namespace g3
 
             return this;
         }
-
-        public enum LateralSlopeUVModes
-        {
-            TopProjected,
-            SideProjected
-        }
     }
 
-
+    public enum SlopeUVMode
+    {
+        OnShape,
+        SideProjected
+    }
 
     public class VerticalGeneralizedCylinderGenerator : MeshGenerator
     {
