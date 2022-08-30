@@ -89,7 +89,7 @@ namespace g3
             float fUVRatio = InnerRadius / OuterRadius;
             for (int k = 0; k < Slices; ++k)
             {
-                float angle = fStartRad + (float)k * fDelta;
+                float angle = fStartRad + k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
                 vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
                 vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
