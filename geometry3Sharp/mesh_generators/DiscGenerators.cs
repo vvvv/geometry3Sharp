@@ -91,8 +91,23 @@ namespace g3
             {
                 float angle = fStartRad + k * fDelta;
                 double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
-                vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
+
+                switch (Normal)
+                {
+                    default:
+                    case NormalDirection.UpZ:
+                        vertices[k] = new Vector3d(InnerRadius * cosa, InnerRadius * -sina, 0);
+                        vertices[Slices + k] = new Vector3d(OuterRadius * cosa, OuterRadius * -sina, 0); //TODO: does this make sense outside vvvv
+                        break;
+                    case NormalDirection.UpY:
+                        vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
+                        vertices[Slices + k] = new Vector3d(OuterRadius * cosa, 0, OuterRadius * sina);
+                        break;
+                    case NormalDirection.UpX:
+                        vertices[k] = new Vector3d(0, InnerRadius * -sina, InnerRadius * -cosa);
+                        vertices[Slices + k] = new Vector3d(0, OuterRadius * -sina, OuterRadius * -cosa); //TODO: does this make sense outside vvvv
+                        break;
+                }
 
                 double uvY1, uvY2;
                 switch (TextureSpace)
