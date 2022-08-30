@@ -109,6 +109,11 @@ namespace g3
                         break;
                 }
 
+                if (GenerateBackFace)
+                {
+                    vertices[2 * Slices + k] = vertices[k];
+                    vertices[3 * Slices + k] = vertices[Slices + k];
+                }
                 double uvY1, uvY2;
                 switch (TextureSpace)
                 {
@@ -125,12 +130,22 @@ namespace g3
                 uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), uvY1);//1.0f - 0.5 * (1 + sina)
                 uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), uvY2);
 
+                if (GenerateBackFace)
+                {
+                    uv[2 * Slices + k] = uv[k];
+                    uv[3 * Slices + k] = uv[Slices + k];
+                }
+
                 switch (Normal)
                 {
                     default:
                     case NormalDirection.UpZ: normals[k] = normals[Slices + k] = Vector3f.AxisZ; break;
                     case NormalDirection.UpY: normals[k] = normals[Slices + k] = Vector3f.AxisY; break;
                     case NormalDirection.UpX: normals[k] = normals[Slices + k] = Vector3f.AxisX; break;
+                }
+                if (GenerateBackFace)
+                {
+                    normals[2 * Slices + k] = normals[3 * Slices + k] = -normals[k];
                 }
             }
 
@@ -139,12 +154,22 @@ namespace g3
             {
                 triangles.Set(ti++, k, k + 1, Slices + k + 1, Clockwise);
                 triangles.Set(ti++, k, Slices + k + 1, Slices + k, Clockwise);
+                if (GenerateBackFace)
+                {
+                    triangles.Set(ti++, 2 * Slices + k, 2 * Slices + k + 1, 3 * Slices + k + 1, !Clockwise);
+                    triangles.Set(ti++, 2 * Slices + k, 3 * Slices + k + 1, 3 * Slices + k, !Clockwise);
+                }
             }
             if (bFullDisc)
             {      
                 // close disc if we went all the way
                 triangles.Set(ti++, Slices - 1, 0, Slices, Clockwise);
                 triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, Clockwise);
+                if (GenerateBackFace)
+                {
+                    triangles.Set(ti++, Slices - 1, 0, Slices, !Clockwise);
+                    triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, !Clockwise);
+                }
             }
 
             return this;
