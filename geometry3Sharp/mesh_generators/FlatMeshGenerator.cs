@@ -4,6 +4,7 @@
     {
         public bool GenerateBackFace = false;
         public TextureSpace TextureSpace = TextureSpace.OpenGL;
+        public NormalDirection Normal = NormalDirection.UpY;
     }
 
     public enum TextureSpace
