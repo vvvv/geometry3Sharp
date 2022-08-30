@@ -114,6 +114,7 @@ namespace g3
                     vertices[2 * Slices + k] = vertices[k];
                     vertices[3 * Slices + k] = vertices[Slices + k];
                 }
+
                 double uvY1, uvY2;
                 switch (TextureSpace)
                 {
@@ -127,7 +128,8 @@ namespace g3
                         uvY2 = 0.5f * (1.0f + sina);
                         break;
                 }
-                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), uvY1);//1.0f - 0.5 * (1 + sina)
+
+                uv[k] = new Vector2f(0.5f * (1.0f + fUVRatio * cosa), uvY1);
                 uv[Slices + k] = new Vector2f(0.5f * (1.0f + cosa), uvY2);
 
                 if (GenerateBackFace)
