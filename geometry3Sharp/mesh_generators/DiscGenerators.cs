@@ -76,10 +76,11 @@ namespace g3
 
         override public MeshGenerator Generate()
         {
-            vertices = new VectorArray3d(2 * Slices);
-            uv = new VectorArray2f(2 * Slices);
-            normals = new VectorArray3f(2 * Slices);
-            triangles = new IndexArray3i(2 * Slices);
+            var count = GenerateBackFace ? 4 * Slices : 2 * Slices;
+            vertices = new VectorArray3d(count);
+            uv = new VectorArray2f(count);
+            normals = new VectorArray3f(count);
+            triangles = new IndexArray3i(count);
 
             bool bFullDisc = ((EndAngleDeg - StartAngleDeg) > 359.99f);
             float fTotalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
