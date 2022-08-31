@@ -97,7 +97,7 @@ namespace g3
                     default:
                     case NormalDirection.UpZ:
                         vertices[k] = new Vector3d(InnerRadius * cosa, InnerRadius * -sina, 0);
-                        vertices[Slices + k] = new Vector3d(OuterRadius * cosa, OuterRadius * -sina, 0); //TODO: does this make sense outside vvvv
+                        vertices[Slices + k] = new Vector3d(OuterRadius * cosa, OuterRadius * -sina, 0);
                         break;
                     case NormalDirection.UpY:
                         vertices[k] = new Vector3d(InnerRadius * cosa, 0, InnerRadius * sina);
@@ -105,7 +105,7 @@ namespace g3
                         break;
                     case NormalDirection.UpX:
                         vertices[k] = new Vector3d(0, InnerRadius * -sina, InnerRadius * -cosa);
-                        vertices[Slices + k] = new Vector3d(0, OuterRadius * -sina, OuterRadius * -cosa); //TODO: does this make sense outside vvvv
+                        vertices[Slices + k] = new Vector3d(0, OuterRadius * -sina, OuterRadius * -cosa);
                         break;
                 }
 
