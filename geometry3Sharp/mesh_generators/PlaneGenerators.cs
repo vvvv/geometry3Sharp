@@ -220,13 +220,12 @@ namespace g3
 
     // Generate a rounded rect centered at origin.
     // Force individual corners to be sharp using the SharpCorners flags field.
-    public class RoundRectGenerator : MeshGenerator
+    public class RoundRectGenerator : FlatMeshGenerator
     {
         public float Width = 1.0f;
         public float Height = 1.0f;
         public float Radius = 0.1f;
         public int CornerSteps = 4;
-
 
         [Flags]
         public enum Corner
@@ -359,8 +358,18 @@ namespace g3
                 Vector3d v = vertices[k];
                 double tx = (v.x - c.x) / Width;
                 double ty = (v.z - c.z) / Height;
-                uv[k] = new Vector2f((1 - tx) * uvleft   + (tx) * uvright,
-                                     (1 - ty) * uvbottom + (ty) * uvtop);
+                switch (TextureSpace)
+                {
+                    case TextureSpace.DirectX:
+                        uv[k] = new Vector2f((1 - tx) * uvleft + (tx) * uvright,
+                                             (1 - ty) * uvbottom + (ty) * -uvtop);
+                        break;
+                    case TextureSpace.OpenGL:
+                    default:
+                        uv[k] = new Vector2f((1 - tx) * uvleft + (tx) * uvright,
+                                             (1 - ty) * uvbottom + (ty) * uvtop);
+                        break;
+                }
             }
 
             return this;
