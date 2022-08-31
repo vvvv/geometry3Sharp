@@ -358,9 +358,9 @@ namespace g3
             {
                 Vector3d v = vertices[k];
                 double tx = (v.x - c.x) / Width;
-                double ty = (v.y - c.y) / Height;
-                uv[k] = new Vector2f((1 - tx) * uvleft + (tx) * uvright,
-                                      (1 - ty) * uvbottom + (ty) * uvtop);
+                double ty = (v.z - c.z) / Height;
+                uv[k] = new Vector2f((1 - tx) * uvleft   + (tx) * uvright,
+                                     (1 - ty) * uvbottom + (ty) * uvtop);
             }
 
             return this;
