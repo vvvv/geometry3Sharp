@@ -47,25 +47,31 @@ namespace g3
             bool bWantUVs = WantUVs && uv != null && uv.Count == vertices.Count;
             if (bWantUVs)
                 m.EnableVertexUVs(Vector2f.Zero);
-            for (int i = 0; i < nV; ++i) {
-				NewVertexInfo ni = new NewVertexInfo() { v = vertices[i] };
-				if (bWantNormals) {
-					ni.bHaveN = true; 
-					ni.n = normals[i];
-				}
-				if (bWantUVs) {
-					ni.bHaveUV = true;
-					ni.uv = uv[i];
-				}
+            for (int i = 0; i < nV; ++i)
+            {
+                NewVertexInfo ni = new NewVertexInfo() { v = vertices[i] };
+                if (bWantNormals)
+                {
+                    ni.bHaveN = true;
+                    ni.n = normals[i];
+                }
+                if (bWantUVs)
+                {
+                    ni.bHaveUV = true;
+                    ni.uv = uv[i];
+                }
                 int vID = m.AppendVertex(ni);
                 Util.gDevAssert(vID == i);
             }
             int nT = triangles.Count;
-            if (WantGroups && groups != null && groups.Length == nT) {
+            if (WantGroups && groups != null && groups.Length == nT)
+            {
                 m.EnableTriangleGroups();
                 for (int i = 0; i < nT; ++i)
                     m.AppendTriangle(triangles[i], groups[i]);
-            } else {
+            }
+            else
+            {
                 for (int i = 0; i < nT; ++i)
                     m.AppendTriangle(triangles[i]);
             }
@@ -85,16 +91,20 @@ namespace g3
         public virtual void MakeMesh(NTMesh3 m)
         {
             int nV = vertices.Count;
-            for (int i = 0; i < nV; ++i) {
+            for (int i = 0; i < nV; ++i)
+            {
                 int vID = m.AppendVertex(vertices[i]);
                 Util.gDevAssert(vID == i);
             }
             int nT = triangles.Count;
-            if (WantGroups && groups != null && groups.Length == nT) {
+            if (WantGroups && groups != null && groups.Length == nT)
+            {
                 m.EnableTriangleGroups();
                 for (int i = 0; i < nT; ++i)
                     m.AppendTriangle(triangles[i], groups[i]);
-            } else {
+            }
+            else
+            {
                 for (int i = 0; i < nT; ++i)
                     m.AppendTriangle(triangles[i]);
             }
@@ -128,7 +138,8 @@ namespace g3
 
         protected void duplicate_vertex_span(int nStart, int nCount)
         {
-            for (int i = 0; i < nCount; ++i) {
+            for (int i = 0; i < nCount; ++i)
+            {
                 vertices[(nStart + nCount) + i] = vertices[nStart + i];
                 normals[(nStart + nCount) + i] = normals[nStart + i];
                 uv[(nStart + nCount) + i] = uv[nStart + i];
@@ -139,12 +150,14 @@ namespace g3
         protected void append_disc(int Slices, int nCenterV, int nRingStart, bool bClosed, bool bCycle, ref int tri_counter, int groupid = -1)
         {
             int nLast = nRingStart + Slices;
-            for (int k = nRingStart; k < nLast - 1; ++k) {
+            for (int k = nRingStart; k < nLast - 1; ++k)
+            {
                 if (groupid >= 0)
                     groups[tri_counter] = groupid;
                 triangles.Set(tri_counter++, k, nCenterV, k + 1, bCycle);
             }
-            if (bClosed) {     // close disc if we went all the way
+            if (bClosed)
+            {     // close disc if we went all the way
                 if (groupid >= 0)
                     groups[tri_counter] = groupid;
                 triangles.Set(tri_counter++, nLast - 1, nCenterV, nRingStart, bCycle);
@@ -154,17 +167,17 @@ namespace g3
         // assumes order would be [v0,v1,v2,v3], ccw
         protected void append_rectangle(int v0, int v1, int v2, int v3, bool bCycle, ref int tri_counter, int groupid = -1)
         {
-            if ( groupid >= 0 )
+            if (groupid >= 0)
                 groups[tri_counter] = groupid;
             triangles.Set(tri_counter++, v0, v1, v3, bCycle);
-            if ( groupid >= 0 )
+            if (groupid >= 0)
                 groups[tri_counter] = groupid;
             triangles.Set(tri_counter++, v3, v1, v2, bCycle);
         }
 
 
         // append "disc" verts/tris between vEnd1 and vEnd2
-        protected void append_2d_disc_segment(int iCenter, int iEnd1, int iEnd2, int nSteps,bool bCycle, ref int vtx_counter, ref int tri_counter, int groupid = -1, double force_r = 0, NormalDirection normal = NormalDirection.UpY)
+        protected void append_2d_disc_segment(int iCenter, int iEnd1, int iEnd2, int nSteps, bool bCycle, ref int vtx_counter, ref int tri_counter, int groupid = -1, double force_r = 0, NormalDirection normal = NormalDirection.UpY)
         {
             Vector3d c = vertices[iCenter];
             Vector3d e0 = vertices[iEnd1];
@@ -173,7 +186,7 @@ namespace g3
             double r0 = v0.Normalize();
             if (force_r > 0)
                 r0 = force_r;
-            
+
             Vector3d v1 = (e1 - c);
             double r1 = v1.Normalize();
             if (force_r > 0)
@@ -207,8 +220,9 @@ namespace g3
                 tEnd += MathUtil.TwoPI;
 
             int iPrev = iEnd1;
-            for ( int i = 0; i < nSteps; ++i ) {
-                double t = (double)(i+1) / (double)(nSteps + 1);
+            for (int i = 0; i < nSteps; ++i)
+            {
+                double t = (double)(i + 1) / (double)(nSteps + 1);
                 double angle = (1 - t) * tStart + (t) * tEnd;
                 Vector3d pos;
                 switch (normal)

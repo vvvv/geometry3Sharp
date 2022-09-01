@@ -120,7 +120,7 @@ namespace g3
                 {
                     case TextureSpace.DirectX:
                         uvY1 = 0.5f * (1.0f - fUVRatio * sina);
-                        uvY2 = 0.5f * (1.0f - sina); 
+                        uvY2 = 0.5f * (1.0f - sina);
                         break;
                     case TextureSpace.OpenGL:
                     default:
@@ -163,7 +163,7 @@ namespace g3
                 }
             }
             if (bFullDisc)
-            {      
+            {
                 // close disc if we went all the way
                 triangles.Set(ti++, Slices - 1, 0, Slices, Clockwise);
                 triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, Clockwise);

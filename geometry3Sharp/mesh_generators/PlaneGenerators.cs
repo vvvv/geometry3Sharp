@@ -335,7 +335,7 @@ namespace g3
                     vertices[11] = new Vector3d(0, innerH / 2, Width / 2);
                     break;
             }
-            
+
 
             // make triangles for inner cross
             bool cycle = (Clockwise == false);
@@ -419,7 +419,7 @@ namespace g3
                     case NormalDirection.UpY: tx = (v.x - c.x) / Width; ty = (v.z - c.z) / Height; break;
                     case NormalDirection.UpX: tx = -(v.z - c.x) / Width; ty = -(v.y - c.z) / Height; break;
                 }
-                
+
                 switch (TextureSpace)
                 {
                     case TextureSpace.DirectX:
