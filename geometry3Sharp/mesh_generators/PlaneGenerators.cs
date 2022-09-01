@@ -274,23 +274,68 @@ namespace g3
             float innerW = Width - 2 * Radius;
             float innerH = Height - 2 * Radius;
 
-            // make vertices for inner "cross" (ie 5 squares)
-            vertices[0] = new Vector3d(-innerW / 2.0f, 0, -innerH / 2.0f);
-            vertices[1] = new Vector3d(innerW / 2.0f, 0, -innerH / 2.0f);
-            vertices[2] = new Vector3d(innerW / 2.0f, 0, innerH / 2.0f);
-            vertices[3] = new Vector3d(-innerW / 2.0f, 0, innerH / 2.0f);
+            switch (Normal)
+            {
+                default:
+                case NormalDirection.UpZ:
+                    // make vertices for inner "cross" (ie 5 squares)
+                    vertices[0] = new Vector3d(-innerW / 2.0f, innerH / 2.0f, 0);
+                    vertices[1] = new Vector3d(innerW / 2.0f, innerH / 2.0f, 0);
+                    vertices[2] = new Vector3d(innerW / 2.0f, -innerH / 2.0f, 0);
+                    vertices[3] = new Vector3d(-innerW / 2.0f, -innerH / 2.0f, 0);
 
-            vertices[4] = new Vector3d(-innerW / 2, 0, -Height / 2);
-            vertices[5] = new Vector3d(innerW / 2, 0, -Height / 2);
+                    vertices[4] = new Vector3d(-innerW / 2, Height / 2, 0);
+                    vertices[5] = new Vector3d(innerW / 2, Height / 2, 0);
 
-            vertices[6] = new Vector3d(Width / 2, 0, -innerH / 2);
-            vertices[7] = new Vector3d(Width / 2, 0, innerH / 2);
+                    vertices[6] = new Vector3d(Width / 2, innerH / 2, 0);
+                    vertices[7] = new Vector3d(Width / 2, -innerH / 2, 0);
 
-            vertices[8] = new Vector3d(innerW / 2, 0, Height / 2);
-            vertices[9] = new Vector3d(-innerW / 2, 0, Height / 2);
+                    vertices[8] = new Vector3d(innerW / 2, -Height / 2, 0);
+                    vertices[9] = new Vector3d(-innerW / 2, -Height / 2, 0);
 
-            vertices[10] = new Vector3d(-Width / 2, 0, innerH / 2);
-            vertices[11] = new Vector3d(-Width / 2, 0, -innerH / 2);
+                    vertices[10] = new Vector3d(-Width / 2, -innerH / 2, 0);
+                    vertices[11] = new Vector3d(-Width / 2, innerH / 2, 0);
+                    break;
+                case NormalDirection.UpY:
+                    // make vertices for inner "cross" (ie 5 squares)
+                    vertices[0] = new Vector3d(-innerW / 2.0f, 0, -innerH / 2.0f);
+                    vertices[1] = new Vector3d(innerW / 2.0f, 0, -innerH / 2.0f);
+                    vertices[2] = new Vector3d(innerW / 2.0f, 0, innerH / 2.0f);
+                    vertices[3] = new Vector3d(-innerW / 2.0f, 0, innerH / 2.0f);
+
+                    vertices[4] = new Vector3d(-innerW / 2, 0, -Height / 2);
+                    vertices[5] = new Vector3d(innerW / 2, 0, -Height / 2);
+
+                    vertices[6] = new Vector3d(Width / 2, 0, -innerH / 2);
+                    vertices[7] = new Vector3d(Width / 2, 0, innerH / 2);
+
+                    vertices[8] = new Vector3d(innerW / 2, 0, Height / 2);
+                    vertices[9] = new Vector3d(-innerW / 2, 0, Height / 2);
+
+                    vertices[10] = new Vector3d(-Width / 2, 0, innerH / 2);
+                    vertices[11] = new Vector3d(-Width / 2, 0, -innerH / 2);
+                    break;
+                case NormalDirection.UpX:
+                    // make vertices for inner "cross" (ie 5 squares) 
+                    vertices[0] = new Vector3d(0, innerH / 2.0f, innerW / 2.0f);
+                    vertices[1] = new Vector3d(0, innerH / 2.0f, -innerW / 2.0f);
+                    vertices[2] = new Vector3d(0, -innerH / 2.0f, -innerW / 2.0f);
+                    vertices[3] = new Vector3d(0, -innerH / 2.0f, innerW / 2.0f);
+
+                    vertices[4] = new Vector3d(0, Height / 2, innerW / 2);
+                    vertices[5] = new Vector3d(0, Height / 2, -innerW / 2);
+
+                    vertices[6] = new Vector3d(0, innerH / 2, -Width / 2);
+                    vertices[7] = new Vector3d(0, -innerH / 2, -Width / 2);
+
+                    vertices[8] = new Vector3d(0, -Height / 2, -innerW / 2);
+                    vertices[9] = new Vector3d(0, -Height / 2, innerW / 2);
+
+                    vertices[10] = new Vector3d(0, -innerH / 2, Width / 2);
+                    vertices[11] = new Vector3d(0, innerH / 2, Width / 2);
+                    break;
+            }
+            
 
             // make triangles for inner cross
             bool cycle = (Clockwise == false);
@@ -308,18 +353,26 @@ namespace g3
                 if (sharp)
                 {
                     append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], 1,
-                        cycle, ref vi, ref ti, -1, MathUtil.SqrtTwo * Radius);
+                        cycle, ref vi, ref ti, -1, MathUtil.SqrtTwo * Radius, Normal);
                 }
                 else
                 {
                     append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], CornerSteps,
-                        cycle, ref vi, ref ti);
+                        cycle, ref vi, ref ti, -1, 0, Normal);
                 }
             }
 
 
             for (int k = 0; k < vertices.Count; ++k)
-                normals[k] = Vector3f.AxisY;
+            {
+                switch (Normal)
+                {
+                    default:
+                    case NormalDirection.UpZ: normals[k] = Vector3f.AxisZ; break;
+                    case NormalDirection.UpY: normals[k] = Vector3f.AxisY; break;
+                    case NormalDirection.UpX: normals[k] = Vector3f.AxisX; break;
+                }
+            }
 
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
@@ -356,8 +409,17 @@ namespace g3
             for (int k = 0; k < vertices.Count; ++k)
             {
                 Vector3d v = vertices[k];
-                double tx = (v.x - c.x) / Width;
-                double ty = (v.z - c.z) / Height;
+
+                double tx;
+                double ty;
+                switch (Normal)
+                {
+                    default:
+                    case NormalDirection.UpZ: tx = (v.x - c.x) / Width; ty = -(v.y - c.z) / Height; break;
+                    case NormalDirection.UpY: tx = (v.x - c.x) / Width; ty = (v.z - c.z) / Height; break;
+                    case NormalDirection.UpX: tx = -(v.z - c.x) / Width; ty = -(v.y - c.z) / Height; break;
+                }
+                
                 switch (TextureSpace)
                 {
                     case TextureSpace.DirectX:

@@ -164,7 +164,7 @@ namespace g3
 
 
         // append "disc" verts/tris between vEnd1 and vEnd2
-        protected void append_2d_disc_segment(int iCenter, int iEnd1, int iEnd2, int nSteps,bool bCycle, ref int vtx_counter, ref int tri_counter, int groupid = -1, double force_r = 0)
+        protected void append_2d_disc_segment(int iCenter, int iEnd1, int iEnd2, int nSteps,bool bCycle, ref int vtx_counter, ref int tri_counter, int groupid = -1, double force_r = 0, NormalDirection normal = NormalDirection.UpY)
         {
             Vector3d c = vertices[iCenter];
             Vector3d e0 = vertices[iEnd1];
@@ -173,12 +173,30 @@ namespace g3
             double r0 = v0.Normalize();
             if (force_r > 0)
                 r0 = force_r;
-            double tStart = Math.Atan2(v0.z, v0.x);
+            
             Vector3d v1 = (e1 - c);
             double r1 = v1.Normalize();
             if (force_r > 0)
                 r1 = force_r;
-            double tEnd = Math.Atan2(v1.z, v1.x);
+
+            double tStart;
+            double tEnd;
+            switch (normal)
+            {
+                default:
+                case NormalDirection.UpY:
+                    tStart = Math.Atan2(v0.z, v0.x);
+                    tEnd = Math.Atan2(v1.z, v1.x);
+                    break;
+                case NormalDirection.UpZ:
+                    tStart = Math.Atan2(-v0.y, v0.x);
+                    tEnd = Math.Atan2(-v1.y, v1.x);
+                    break;
+                case NormalDirection.UpX:
+                    tStart = Math.Atan2(-v0.y, -v0.z);
+                    tEnd = Math.Atan2(-v1.y, -v1.z);
+                    break;
+            }
 
             // fix angles to handle sign. **THIS ONLY WORKS IF WE ARE GOING CCW!!**
             if (tStart < 0)
@@ -192,7 +210,20 @@ namespace g3
             for ( int i = 0; i < nSteps; ++i ) {
                 double t = (double)(i+1) / (double)(nSteps + 1);
                 double angle = (1 - t) * tStart + (t) * tEnd;
-                Vector3d pos = c + new Vector3d(r0 * Math.Cos(angle), 0, r1 * Math.Sin(angle));
+                Vector3d pos;
+                switch (normal)
+                {
+                    default:
+                    case NormalDirection.UpY:
+                        pos = c + new Vector3d(r0 * Math.Cos(angle), 0, r1 * Math.Sin(angle));
+                        break;
+                    case NormalDirection.UpZ:
+                        pos = c + new Vector3d(r0 * Math.Cos(angle), -r1 * Math.Sin(angle), 0);
+                        break;
+                    case NormalDirection.UpX:
+                        pos = c + new Vector3d(0, -r1 * Math.Sin(angle), -r0 * Math.Cos(angle));
+                        break;
+                }
                 vertices.Set(vtx_counter, pos.x, pos.y, pos.z);
                 if (groupid >= 0)
                     groups[tri_counter] = groupid;
