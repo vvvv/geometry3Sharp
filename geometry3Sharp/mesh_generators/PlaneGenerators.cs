@@ -266,10 +266,10 @@ namespace g3
                 }
             }
 
-            vertices = new VectorArray3d(12 + corner_v);
-            uv = new VectorArray2f(vertices.Count);
-            normals = new VectorArray3f(vertices.Count);
-            triangles = new IndexArray3i(10 + corner_t);
+            vertices = new VectorArray3d(GenerateBackFace ? 2 * (12 + corner_v) : 12 + corner_v);
+            uv = new VectorArray2f(GenerateBackFace ? 2 * vertices.Count : vertices.Count);
+            normals = new VectorArray3f(GenerateBackFace ? 2 * vertices.Count: vertices.Count);
+            triangles = new IndexArray3i(GenerateBackFace ? 2 * (10 + corner_t) : 10 + corner_t);
 
             float innerW = Width - 2 * Radius;
             float innerH = Height - 2 * Radius;
@@ -362,6 +362,52 @@ namespace g3
                 }
             }
 
+            if (GenerateBackFace)
+            {
+                int offset = 12 + corner_v;
+                vertices[0 + offset] = vertices[0];
+                vertices[1 + offset] = vertices[1];
+                vertices[2 + offset] = vertices[2];
+                vertices[3 + offset] = vertices[3];
+
+                vertices[4 + offset] = vertices[4];
+                vertices[5 + offset] = vertices[5];
+
+                vertices[6 + offset] = vertices[6];
+                vertices[7 + offset] = vertices[7];
+
+                vertices[8 + offset] = vertices[8];
+                vertices[9 + offset] = vertices[9];
+
+                vertices[10 + offset] = vertices[10];
+                vertices[11 + offset] = vertices[11];
+
+                normals[0 + offset] = normals[1 + offset] = normals[2 + offset] = normals[3 + offset] = normals[4 + offset] = normals[5 + offset]
+                    = normals[6 + offset] = normals[7 + offset] = normals[8 + offset] = normals[9 + offset] = normals[10 + offset] = normals[11 + offset] = -normals[0];
+
+                append_rectangle(0 + offset, 1 + offset, 2 + offset, 3 + offset, !cycle, ref ti);
+                append_rectangle(4 + offset, 5 + offset, 1 + offset, 0 + offset, !cycle, ref ti);
+                append_rectangle(1 + offset, 6 + offset, 7 + offset, 2 + offset, !cycle, ref ti);
+                append_rectangle(3 + offset, 2 + offset, 8 + offset, 9 + offset, !cycle, ref ti);
+                append_rectangle(11 + offset, 0 + offset, 3 + offset, 10 + offset, !cycle, ref ti);
+
+                vi = 12 + offset;
+                for (int j = 0; j < 4; ++j)
+                {
+                    bool sharp = ((int)SharpCorners & (1 << j)) > 0;
+                    if (sharp)
+                    {
+                        append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], 1,
+                            !cycle, ref vi, ref ti, -1, MathUtil.SqrtTwo * Radius, Normal);
+                    }
+                    else
+                    {
+                        append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], CornerSteps,
+                            !cycle, ref vi, ref ti, -1, 0, Normal);
+                    }
+                }
+            }
+
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
             // if we want the UV subregion, we assume it is 
@@ -405,15 +451,15 @@ namespace g3
                     default:
                     case NormalDirection.UpZ: 
                         tx = (v.x - c.x) / Width; ty = -(v.y - c.z) / Height;
-                        normals[k] = Vector3f.AxisZ;
+                        normals[k] = (GenerateBackFace && k >= vertices.Count / 2) ? -Vector3f.AxisZ : Vector3f.AxisZ;
                         break;
                     case NormalDirection.UpY: 
                         tx = (v.x - c.x) / Width; ty = (v.z - c.z) / Height;
-                        normals[k] = Vector3f.AxisY;
+                        normals[k] = (GenerateBackFace && k >= vertices.Count / 2) ? -Vector3f.AxisY : Vector3f.AxisY;
                         break;
                     case NormalDirection.UpX: 
                         tx = -(v.z - c.x) / Width; ty = -(v.y - c.z) / Height;
-                        normals[k] = Vector3f.AxisX;
+                        normals[k] = (GenerateBackFace && k >= vertices.Count / 2) ? -Vector3f.AxisX : Vector3f.AxisX;
                         break;
                 }
 
