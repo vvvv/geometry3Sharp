@@ -169,8 +169,8 @@ namespace g3
                 triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, Clockwise);
                 if (GenerateBackFace)
                 {
-                    triangles.Set(ti++, Slices - 1, 0, Slices, !Clockwise);
-                    triangles.Set(ti++, Slices - 1, Slices, 2 * Slices - 1, !Clockwise);
+                    triangles.Set(ti++, 2 * Slices + Slices - 1, 2 * Slices + 0, 2 * Slices + Slices, !Clockwise);
+                    triangles.Set(ti++, 2 * Slices + Slices - 1, 2 * Slices + Slices, 2 * Slices + 2 * Slices - 1, !Clockwise);
                 }
             }
 
