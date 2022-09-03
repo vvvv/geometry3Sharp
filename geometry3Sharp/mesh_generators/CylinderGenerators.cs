@@ -89,7 +89,6 @@ namespace g3
                     normals[startIndex] = new Vector3f(0, 1, 0);
                     break;
                 case CapType.Bottom:
-                    break;
                 default:
                     vertices[startIndex] = new Vector3d(0, 0, 0);
                     normals[startIndex] = new Vector3f(0, -1, 0);
@@ -152,15 +151,30 @@ namespace g3
                 vertices[startIndex + 6] = vertices[ringSize * i - 1]; //b
                 vertices[startIndex + 7] = vertices[ringSize * (i + 1) - 1]; //top-b
 
-                normals[startIndex] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
-                normals[startIndex + 1] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
-                normals[startIndex + 2] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
-                normals[startIndex + 3] = estimate_normal(startIndex, startIndex + 1, startIndex + 2);
-                normals[startIndex + 4] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
-                normals[startIndex + 5] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
-                normals[startIndex + 6] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
-                normals[startIndex + 7] = estimate_normal(startIndex + 4, startIndex + 5, startIndex + 6);
-                
+                //these indexes will result in proper normal estimation in all cases except when bottom radius is 0 (they work for top radius == 0)
+                int vil0 = 0, vil1 = 1, vir0 = 5, vir1 = 6;
+
+                //bottom radius == 0
+                if (currentRadius == 0 && i == 1)
+                {
+                    //since we add a rectangle below using these vertices but on this case only one triangle has an area (the other one collapses due to radius of 0)
+                    //we need to make sure we use the right indexes to estimate the normal. If we pick the collapsed triangle in the rectangle the estimated normal is 0,0,0
+                    vil0 = 1;
+                    vil1 = 2;
+                    vir0 = 4;
+                    vir1 = 5;
+                }
+
+                normals[startIndex] = estimate_normal(startIndex + vil0, startIndex + vil1, startIndex + 3);
+                normals[startIndex + 1] = estimate_normal(startIndex + vil0, startIndex + vil1, startIndex + 3);
+                normals[startIndex + 2] = estimate_normal(startIndex + vil0, startIndex + vil1, startIndex + 3);
+                normals[startIndex + 3] = estimate_normal(startIndex + vil0, startIndex + vil1, startIndex + 3);
+                normals[startIndex + 4] = estimate_normal(startIndex + vir0, startIndex + vir1, startIndex + 7);
+                normals[startIndex + 5] = estimate_normal(startIndex + vir0, startIndex + vir1, startIndex + 7);
+                normals[startIndex + 6] = estimate_normal(startIndex + vir0, startIndex + vir1, startIndex + 7);
+                normals[startIndex + 7] = estimate_normal(startIndex + vir0, startIndex + vir1, startIndex + 7);
+
+
                 uv[startIndex] = new Vector2f(0, yb); //vertex:bottom uv:bottom-left
                 uv[startIndex + 1] = new Vector2f(0, yt); //vertex:top uv:top-left
                 uv[startIndex + 2] = new Vector2f(xt, yt); //vertex:top-a uv:top-right
