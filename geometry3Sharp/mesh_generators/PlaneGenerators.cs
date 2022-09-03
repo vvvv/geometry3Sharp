@@ -362,18 +362,6 @@ namespace g3
                 }
             }
 
-
-            for (int k = 0; k < vertices.Count; ++k)
-            {
-                switch (Normal)
-                {
-                    default:
-                    case NormalDirection.UpZ: normals[k] = Vector3f.AxisZ; break;
-                    case NormalDirection.UpY: normals[k] = Vector3f.AxisY; break;
-                    case NormalDirection.UpX: normals[k] = Vector3f.AxisX; break;
-                }
-            }
-
             float uvleft = 0.0f, uvright = 1.0f, uvbottom = 0.0f, uvtop = 1.0f;
 
             // if we want the UV subregion, we assume it is 
@@ -415,9 +403,18 @@ namespace g3
                 switch (Normal)
                 {
                     default:
-                    case NormalDirection.UpZ: tx = (v.x - c.x) / Width; ty = -(v.y - c.z) / Height; break;
-                    case NormalDirection.UpY: tx = (v.x - c.x) / Width; ty = (v.z - c.z) / Height; break;
-                    case NormalDirection.UpX: tx = -(v.z - c.x) / Width; ty = -(v.y - c.z) / Height; break;
+                    case NormalDirection.UpZ: 
+                        tx = (v.x - c.x) / Width; ty = -(v.y - c.z) / Height;
+                        normals[k] = Vector3f.AxisZ;
+                        break;
+                    case NormalDirection.UpY: 
+                        tx = (v.x - c.x) / Width; ty = (v.z - c.z) / Height;
+                        normals[k] = Vector3f.AxisY;
+                        break;
+                    case NormalDirection.UpX: 
+                        tx = -(v.z - c.x) / Width; ty = -(v.y - c.z) / Height;
+                        normals[k] = Vector3f.AxisX;
+                        break;
                 }
 
                 switch (TextureSpace)
