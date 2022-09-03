@@ -397,12 +397,12 @@ namespace g3
                     bool sharp = ((int)SharpCorners & (1 << j)) > 0;
                     if (sharp)
                     {
-                        append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], 1,
+                        append_2d_disc_segment(corner_spans[3 * j] + offset, corner_spans[3 * j + 1] + offset, corner_spans[3 * j + 2] + offset, 1,
                             !cycle, ref vi, ref ti, -1, MathUtil.SqrtTwo * Radius, Normal);
                     }
                     else
                     {
-                        append_2d_disc_segment(corner_spans[3 * j], corner_spans[3 * j + 1], corner_spans[3 * j + 2], CornerSteps,
+                        append_2d_disc_segment(corner_spans[3 * j] + offset, corner_spans[3 * j + 1] + offset, corner_spans[3 * j + 2] + offset, CornerSteps,
                             !cycle, ref vi, ref ti, -1, 0, Normal);
                     }
                 }
