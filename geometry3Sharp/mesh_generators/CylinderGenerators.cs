@@ -34,7 +34,7 @@ namespace g3
         /// <param name="closed">Boolean specifying if the cylinder has an angled opening (Start and end angles do not describe a single complete circle)</param>
         /// <param name="delta">Radial step to take between each vertex</param>
         /// <param name="ringSize">Amount of radial vertices in the ring</param>
-        internal void AddRing(float radius, float y, float slope, float startRad, int startIndex, bool closed, float delta, int ringSize)
+        internal void AddRing(float radius, float y, float slope, float startRad, int startIndex, bool closed, float delta, int ringSize, bool generateBackFace = false)
         {
             double cosa, sina;
             float angle, t;
@@ -67,6 +67,13 @@ namespace g3
                 Vector3f n = new Vector3f(cosa * Height, slope, sina * Height);
                 n.Normalize();
                 normals[startIndex + k] = n;
+
+                if (generateBackFace)
+                {
+                    vertices[startIndex + k + vertices.Count / 2] = new Vector3d(radius * cosa, y, radius * sina);
+                    uv[startIndex + k + uv.Count / 2] = uv[startIndex + k];
+                    normals[startIndex + k + normals.Count / 2] = -normals[startIndex + k];
+                }
             }
         }
 
@@ -198,17 +205,19 @@ namespace g3
         /// </summary>
         /// <param name="ringSize">Amount of radial vertices in the ring</param>
         /// <param name="triangleIndex">Index to use as a starting position to add triangles</param>
-        internal void AddCylinderPanels(int ringSize, ref int triangleIndex)
+        internal void AddCylinderPanels(int ringSize, ref int triangleIndex, bool generateBackFace = false)
         {
+            var offset = generateBackFace ? ringSize * Rings : 0;
             for (int k = 0; k < ringSize - 1; ++k)
             {
                 for (int i = 0; i < Rings - 1; i++)
                 {
                     var k1 = k + ringSize * i;
                     groups[triangleIndex] = 1;
-                    triangles.Set(triangleIndex++, k1, k1 + 1, ringSize + k1, Clockwise);
                     groups[triangleIndex] = 1;
-                    triangles.Set(triangleIndex++, k1 + 1, ringSize + k1 + 1, ringSize + k1, Clockwise);
+
+                        triangles.Set(triangleIndex++, k1 + offset, k1 + 1 + offset, ringSize + k1 + offset, generateBackFace);
+                        triangles.Set(triangleIndex++, k1 + 1 + offset, ringSize + k1 + 1 + offset, ringSize + k1 + offset, generateBackFace);
                 }
             }
         }
@@ -236,15 +245,16 @@ namespace g3
     public class OpenCylinderGenerator : CylindricMeshGenerator
     {
         public float TopRadius = 1.0f;
+        public bool GenerateBackFace = false;
 
         override public MeshGenerator Generate()
         {
             bool closed = EndAngleDeg - StartAngleDeg == 360;
             int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
-            vertices = new VectorArray3d(ringSize * Rings);
+            vertices = new VectorArray3d(GenerateBackFace ? 2 * ringSize * Rings : ringSize * Rings);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
-            triangles = new IndexArray3i(2 * Slices * Rings);
+            triangles = new IndexArray3i(GenerateBackFace ? 2 * 2 * Slices * Rings : 2 * Slices * Rings);
             groups = new int[triangles.Count];
 
             float totalRange = (EndAngleDeg - StartAngleDeg) * MathUtil.Deg2Radf;
@@ -261,13 +271,18 @@ namespace g3
 
             for (int i = 0; i < Rings; i++)
             {
-                AddRing(i == Rings - 1 ? TopRadius : currentRadius, i == Rings - 1 ? Height : vStepSize * i, slope, startRad, i * ringSize, closed, delta, ringSize);
+                AddRing(i == Rings - 1 ? TopRadius : currentRadius, i == Rings - 1 ? Height : vStepSize * i, slope, startRad, i * ringSize, closed, delta, ringSize, GenerateBackFace);
                 currentRadius -= radiusStep;
             }
 
             // generate cylinder panels
             int ti = 0;
             AddCylinderPanels(ringSize, ref ti);
+
+            if (GenerateBackFace)
+            {
+                AddCylinderPanels(ringSize, ref ti, true);
+            }
 
             // close disc if we went all the way
             if (closed && NoSharedVertices == false)
