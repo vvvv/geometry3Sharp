@@ -400,6 +400,7 @@ namespace g3
     // a cylinder-like projection
     public class ConeGenerator : CylindricMeshGenerator
     {
+        public bool Capped = true;
         public SlopeUVMode SlopeUVMode = SlopeUVMode.OnShape;
 
         override public MeshGenerator Generate()
@@ -407,14 +408,14 @@ namespace g3
             bool closed = EndAngleDeg - StartAngleDeg == 360;
             int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
             int tipVertices = (NoSharedVertices) ? ringSize : 1;
-            int capVertices = (NoSharedVertices) ? Slices + 1 : 1;
+            int capVertices = (NoSharedVertices) ? Capped ? Slices + 1 : 0 : 1;
             int faceVertices = (NoSharedVertices && closed == false) ? 8 * (Rings - 1) : 0; //these are the "inner faces" resulting from opening the cone up using angles
             vertices = new VectorArray3d(ringSize * (Rings - 1) + tipVertices + capVertices + faceVertices);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
 
             int coneTris = (NoSharedVertices) ? 2 * Slices * (Rings - 1) : Slices;
-            int capTris = Slices;
+            int capTris = Capped ? Slices : 0;
             int faceTris = (closed == false) ? 2 * 2 * (Rings - 1) : 0; //2 faces, 2 triangles per face per (Rings - 1)
             triangles = new IndexArray3i(coneTris + capTris + faceTris);
             groups = new int[triangles.Count];
@@ -490,7 +491,8 @@ namespace g3
 
             if (NoSharedVertices)
             {
-                AddCap(BaseRadius, startRad, ringSize * Rings, closed, delta, ref ti);
+                if (Capped)
+                    AddCap(BaseRadius, startRad, ringSize * Rings, closed, delta, ref ti);
 
                 if (closed == false)
                 {
