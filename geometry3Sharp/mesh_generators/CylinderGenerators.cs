@@ -128,7 +128,7 @@ namespace g3
         /// <param name="ringSize">Amount of radial vertices in the ring</param>
         /// <param name="innerFaceUVMode">Used to decide how to calculate inner face UVs</param>
         /// <param name="triangleIndex">Index to use as a starting position to add triangles</param>
-        internal void AddInnerFaces(float vStepSize, int startIndex, int ringSize, InnerFaceUVMode innerFaceUVMode, ref int triangleIndex)
+        internal void AddInnerFaces(float vStepSize, int startIndex, int ringSize, InnerFaceUVMode innerFaceUVMode, ref int triangleIndex, bool generateBackFace = false)
         {
             float ringBottom = 0;
             float ySpan = Height == 0 ? 1.0f : Height;
@@ -191,8 +191,8 @@ namespace g3
                 uv[startIndex + 6] = new Vector2f(xb, yb); //vertex:b uv:bottom-right
                 uv[startIndex + 7] = new Vector2f(xt, yt); //vertex:top-b uv:top-right
 
-                append_rectangle(startIndex + 0, startIndex + 1, startIndex + 2, startIndex + 3, !Clockwise, ref triangleIndex, 4);
-                append_rectangle(startIndex + 4, startIndex + 5, startIndex + 6, startIndex + 7, !Clockwise, ref triangleIndex, 5);
+                append_rectangle(startIndex + 0, startIndex + 1, startIndex + 2, startIndex + 3, generateBackFace ? Clockwise : !Clockwise, ref triangleIndex, 4);
+                append_rectangle(startIndex + 4, startIndex + 5, startIndex + 6, startIndex + 7, generateBackFace ? Clockwise : !Clockwise, ref triangleIndex, 5);
 
                 ringBottom += vStepSize;
                 startIndex += 8;
@@ -401,22 +401,23 @@ namespace g3
     public class ConeGenerator : CylindricMeshGenerator
     {
         public bool Capped = true;
+        public bool GenerateBackFace = false;
         public SlopeUVMode SlopeUVMode = SlopeUVMode.OnShape;
 
         override public MeshGenerator Generate()
         {
             bool closed = EndAngleDeg - StartAngleDeg == 360;
             int ringSize = (NoSharedVertices && closed) ? Slices + 1 : Slices;
-            int tipVertices = (NoSharedVertices) ? ringSize : 1;
+            int tipVertices = (NoSharedVertices) ? GenerateBackFace ? 2 * ringSize : ringSize : 1;
             int capVertices = (NoSharedVertices) ? Capped ? Slices + 1 : 0 : 1;
-            int faceVertices = (NoSharedVertices && closed == false) ? 8 * (Rings - 1) : 0; //these are the "inner faces" resulting from opening the cone up using angles
-            vertices = new VectorArray3d(ringSize * (Rings - 1) + tipVertices + capVertices + faceVertices);
+            int faceVertices = (NoSharedVertices && closed == false) ? GenerateBackFace ? 2 * (8 * (Rings - 1)) : 8 * (Rings - 1) : 0; //these are the "inner faces" resulting from opening the cone up using angles
+            vertices = new VectorArray3d((GenerateBackFace ? 2 * (ringSize * (Rings - 1)) : ringSize * (Rings - 1)) + tipVertices + capVertices + faceVertices);
             uv = new VectorArray2f(vertices.Count);
             normals = new VectorArray3f(vertices.Count);
 
-            int coneTris = (NoSharedVertices) ? 2 * Slices * (Rings - 1) : Slices;
+            int coneTris = (NoSharedVertices) ? GenerateBackFace ? 2 * (2 * Slices * (Rings - 1)) : 2 * Slices * (Rings - 1) : Slices;
             int capTris = Capped ? Slices : 0;
-            int faceTris = (closed == false) ? 2 * 2 * (Rings - 1) : 0; //2 faces, 2 triangles per face per (Rings - 1)
+            int faceTris = (closed == false) ? GenerateBackFace ? 2 * (2 * 2 * (Rings - 1)) : 2 * 2 * (Rings - 1) : 0; //2 faces, 2 triangles per face per (Rings - 1)
             triangles = new IndexArray3i(coneTris + capTris + faceTris);
             groups = new int[triangles.Count];
 
@@ -433,44 +434,13 @@ namespace g3
             // amount to increase/decrease radius by on each ring starting from the base
             float radiusStep = BaseRadius / (Rings - 1);
 
-            // generate rings
-            for (int k = 0; k < ringSize; ++k)
+            //Generate Cone rings
+            GenerateConeRings(vStepSize, ringSize, startRad, delta, ySpan, radiusStep);
+            if (GenerateBackFace)
             {
-                float angle = startRad + (float)k * delta;
-                double cosa = Math.Cos(angle), sina = Math.Sin(angle);
-                float t = (float)k / (float)GetSliceCount();
-                float topUVStep = t - 1.0f / (GetSliceCount() * 2.0f);
-
-                float currentRadius = BaseRadius;
-                for (int i = 0; i < Rings; i++)
-                {
-
-                    float yt = vStepSize * i / ySpan;
-                    vertices[ringSize * i + k] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
-                    // UV
-                    switch (SlopeUVMode)
-                    {
-                        case SlopeUVMode.SideProjected:
-                            if (i == (Rings - 1))
-                            {
-                                uv[ringSize * i + k - 1] = new Vector2f(1.0f - topUVStep, yt);
-                            }
-                            else
-                            {
-                                uv[ringSize * i + k] = new Vector2f(1 - t, yt);
-                            }
-                            break;
-                        case SlopeUVMode.OnShape:
-                        default:
-                            uv[ringSize * i + k] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1 - 0.5 * (1 + (currentRadius / BaseRadius) * sina));
-                            break;
-                    }
-                    Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
-                    n.Normalize();
-                    normals[ringSize * i + k] = n;
-                    currentRadius -= radiusStep;
-                }
+                GenerateConeRings(vStepSize, ringSize, startRad, delta, ySpan, radiusStep, true);
             }
+
             if (NoSharedVertices == false)
             {
                 vertices[ringSize] = new Vector3d(0, Height, 0);
@@ -482,21 +452,41 @@ namespace g3
             if (NoSharedVertices)
             {
                 AddCylinderPanels(ringSize, ref ti);
+                if (GenerateBackFace)
+                {
+                    AddCylinderPanels(ringSize, ref ti, true);
+                }
 
             }
             else
                 append_disc(Slices, ringSize, 0, closed, !Clockwise, ref ti);
 
-            int nBottomC = ringSize * Rings;
+            int nBottomC = GenerateBackFace ? 2 * ringSize * Rings : ringSize * Rings;
 
             if (NoSharedVertices)
             {
                 if (Capped)
-                    AddCap(BaseRadius, startRad, ringSize * Rings, closed, delta, ref ti);
-
-                if (closed == false)
                 {
-                    AddInnerFaces(vStepSize, nBottomC + 1 + Slices, ringSize, InnerFaceUVMode.Cone, ref ti);
+                    AddCap(BaseRadius, startRad, nBottomC, closed, delta, ref ti);
+                    if (closed == false)
+                    {
+                        AddInnerFaces(vStepSize, nBottomC + 1 + Slices, ringSize, InnerFaceUVMode.Cone, ref ti);
+                        if (GenerateBackFace)
+                        {
+                            AddInnerFaces(vStepSize, nBottomC + 1 + Slices + (8 * (Rings - 1)), ringSize, InnerFaceUVMode.Cone, ref ti, true);
+                        }
+                    }
+                }
+                else
+                {
+                    if (closed == false)
+                    {
+                        AddInnerFaces(vStepSize, nBottomC, ringSize, InnerFaceUVMode.Cone, ref ti);
+                        if (GenerateBackFace)
+                        {
+                            AddInnerFaces(vStepSize, nBottomC + 8 * (Rings - 1), ringSize, InnerFaceUVMode.Cone, ref ti, true);
+                        }
+                    }
                 }
             }
             else
@@ -510,6 +500,49 @@ namespace g3
             }
 
             return this;
+        }
+
+        private void GenerateConeRings(float vStepSize, int ringSize, float startRad, float delta, float ySpan, float radiusStep, bool generateBackFace = false)
+        {
+            // generate rings
+            var offset = generateBackFace ? ringSize * Rings : 0;
+            for (int k = 0; k < ringSize; ++k)
+            {
+                float angle = startRad + (float)k * delta;
+                double cosa = Math.Cos(angle), sina = Math.Sin(angle);
+                float t = (float)k / (float)GetSliceCount();
+                float topUVStep = t - 1.0f / (GetSliceCount() * 2.0f);
+
+                float currentRadius = BaseRadius;
+                for (int i = 0; i < Rings; i++)
+                {
+
+                    float yt = vStepSize * i / ySpan;
+                    vertices[ringSize * i + k + offset] = new Vector3d(currentRadius * cosa, vStepSize * i, currentRadius * sina);
+                    // UV
+                    switch (SlopeUVMode)
+                    {
+                        case SlopeUVMode.SideProjected:
+                            if (i == (Rings - 1))
+                            {
+                                uv[ringSize * i + k - 1 + offset] = new Vector2f(1.0f - topUVStep, yt);
+                            }
+                            else
+                            {
+                                uv[ringSize * i + k + offset] = new Vector2f(1 - t, yt);
+                            }
+                            break;
+                        case SlopeUVMode.OnShape:
+                        default:
+                            uv[ringSize * i + k + offset] = new Vector2f(0.5f * (1 + (currentRadius / BaseRadius) * cosa), 1 - 0.5 * (1 + (currentRadius / BaseRadius) * sina));
+                            break;
+                    }
+                    Vector3f n = new Vector3f(cosa * Height, BaseRadius / Height, sina * Height);
+                    n.Normalize();
+                    normals[(ringSize * i) + k + offset] = generateBackFace ? -n : n;
+                    currentRadius -= radiusStep;
+                }
+            }
         }
     }
 
